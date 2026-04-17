@@ -1,0 +1,63 @@
+{
+    "name": "chiiya/laravel-identity",
+    "description": "OpenID Connect identity layer for Laravel Passport",
+    "keywords": ["laravel", "passport", "oauth2", "openid", "oidc"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ell Cooke",
+            "email": "chiiya@posteo.de"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "illuminate/contracts": "^13.0",
+        "illuminate/database": "^13.0",
+        "illuminate/http": "^13.0",
+        "illuminate/routing": "^13.0",
+        "illuminate/support": "^13.0",
+        "laravel/passport": "^13.0",
+        "lcobucci/jwt": "^5.0",
+        "league/oauth2-server": "^9.0",
+        "nyholm/psr7": "^1.8",
+        "spatie/laravel-package-tools": "^1.16"
+    },
+    "require-dev": {
+        "chiiya/laravel-code-style": "^4.0",
+        "mockery/mockery": "^1.6",
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.0"
+    },
+    "suggest": {
+        "chiiya/laravel-utilities": "Enables AbstractRepository and Pipe-based extension hooks"
+    },
+    "autoload": {
+        "psr-4": {
+            "Chiiya\\LaravelIdentity\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Chiiya\\LaravelIdentity\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Chiiya\\LaravelIdentity\\LaravelIdentityServiceProvider"
+            ],
+            "aliases": {
+                "Identity": "Chiiya\\LaravelIdentity\\Identity"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpro/grumphp": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

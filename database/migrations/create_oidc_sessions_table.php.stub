@@ -1,0 +1,30 @@
+<?php declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (Schema::hasTable('oidc_sessions')) {
+            return;
+        }
+
+        Schema::create('oidc_sessions', function (Blueprint $table): void {
+            $table->uuid('id')->primary();
+            $table->string('user_id')->index();
+            $table->uuid('client_id')->index();
+            $table->string('laravel_session_id', 40)->index();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('last_seen_at')->useCurrent();
+            $table->timestamp('revoked_at')->nullable()->index();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('oidc_sessions');
+    }
+};
