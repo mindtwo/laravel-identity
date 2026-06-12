@@ -44,6 +44,17 @@ class DiscoveryEndpointTest extends TestCase
         $response->assertJsonPath('frontchannel_logout_supported', true);
     }
 
+    public function test_token_endpoint_auth_methods_include_public_clients(): void
+    {
+        $methods = $this->getJson('/.well-known/openid-configuration')
+            ->json('token_endpoint_auth_methods_supported');
+
+        // Confidential (secret) and public (PKCE / none) clients are both supported.
+        $this->assertContains('client_secret_basic', $methods);
+        $this->assertContains('client_secret_post', $methods);
+        $this->assertContains('none', $methods);
+    }
+
     public function test_unsupported_parameters_are_advertised_as_false(): void
     {
         $response = $this->getJson('/.well-known/openid-configuration');

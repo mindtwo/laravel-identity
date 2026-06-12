@@ -33,7 +33,9 @@ class DefaultDiscoveryBuilder implements DiscoveryDocumentBuilder
             'subject_types_supported' => ['public', 'pairwise'],
             'id_token_signing_alg_values_supported' => $this->keyResolver->supportedAlgs(),
             'scopes_supported' => $this->scopeRegistrar->all(),
-            'token_endpoint_auth_methods_supported' => ['client_secret_basic', 'client_secret_post'],
+            // Confidential clients authenticate with a secret; public (PKCE)
+            // clients authenticate with `none` (RFC 8414 / Passport public clients).
+            'token_endpoint_auth_methods_supported' => ['client_secret_basic', 'client_secret_post', 'none'],
             // Scope-mapped claims plus the always-emitted id_token claims that are
             // not tied to a scope (Discovery 1.0 §3; list is non-exhaustive).
             'claims_supported' => array_values(array_unique([
