@@ -48,12 +48,12 @@ class AuthorizationController extends PassportAuthorizationController
         if ($user instanceof OAuthenticatable) {
             $authTime = $this->resolveAuthTime($user);
             $context = AuthRequestContext::fromRequest($request, $authTime);
+            $client = $this->resolveClientFromRequest($request);
 
             // OIDC max_age: re-authenticate when the existing session is older than
-            // the requested maximum authentication age (Core 1.0 §3.1.2.1).
-            $this->enforceMaxAge($context, $request);
-
-            $client = $this->resolveClientFromRequest($request);
+            // the requested max_age, falling back to the client's registered
+            // default_max_age (Core 1.0 §2, §3.1.2.1).
+            $this->enforceMaxAge($this->effectiveMaxAge($context, $client), $authTime, $request);
 
             if ($client instanceof Client) {
                 // Mint the session id here (the web session exists) and stash it with
@@ -72,9 +72,22 @@ class AuthorizationController extends PassportAuthorizationController
         return parent::authorize($psrRequest, $request, $psrResponse, $viewResponse);
     }
 
-    private function enforceMaxAge(AuthRequestContext $context, Request $request): void
+    private function effectiveMaxAge(AuthRequestContext $context, ?Client $client): ?int
     {
-        if ($context->maxAge === null) {
+        if ($context->maxAge !== null) {
+            return $context->maxAge;
+        }
+
+        if ($client instanceof Client && method_exists($client, 'getDefaultMaxAge')) {
+            return $client->getDefaultMaxAge();
+        }
+
+        return null;
+    }
+
+    private function enforceMaxAge(?int $maxAge, DateTimeImmutable $authTime, Request $request): void
+    {
+        if ($maxAge === null) {
             return;
         }
 
@@ -82,9 +95,9 @@ class AuthorizationController extends PassportAuthorizationController
             return;
         }
 
-        $elapsed = new DateTimeImmutable()->getTimestamp() - $context->authTime->getTimestamp();
+        $elapsed = new DateTimeImmutable()->getTimestamp() - $authTime->getTimestamp();
 
-        if ($elapsed <= $context->maxAge) {
+        if ($elapsed <= $maxAge) {
             return;
         }
 
