@@ -99,7 +99,7 @@ class LaravelIdentityServiceProvider extends PackageServiceProvider
     public function packageBooted(): void
     {
         // Swap Passport's BearerTokenResponse so token endpoint responses include id_token.
-        Passport::$authorizationServerResponseType = $this->app->make(IdTokenResponseType::class);
+        Passport::useAuthorizationServerResponseType($this->app->make(IdTokenResponseType::class));
 
         if (config('identity.register_openid_scope', true)) {
             $this->registerOidcScopes();
