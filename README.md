@@ -152,12 +152,24 @@ First-party clients (see [First-party clients](#first-party-clients)) skip confi
 
 ### Front-Channel Logout
 
-On logout the package renders a page with a hidden iframe per active session whose client registered a `frontchannel_logout_uri`. Sessions are tracked in `oidc_sessions`, and each iframe carries the same `sid` embedded in that session's ID token. Provide your own layout if you want the iframes wrapped in your application chrome:
+On logout the package renders a page with a hidden iframe per active session whose client registered a `frontchannel_logout_uri`. Sessions are tracked in `oidc_sessions`, and each iframe carries the same `sid` embedded in that session's ID token.
+
+To brand the page, point `Identity::frontChannelLogoutLayout` at your own view and **embed the supplied Blade component** — you get the iframe-loading and redirect logic for free, you only style around it:
+
+```blade
+{{-- resources/views/layouts/logout.blade.php --}}
+<x-app-layout>
+    <p>Signing you out…</p>
+    <x-identity::front-channel-logout :urls="$iframeUrls" :redirect="$redirectUri ?? '/'" />
+</x-app-layout>
+```
 
 ```php
 Identity::frontChannelLogoutLayout('layouts.logout');
-// receives ['iframeUrls' => array, 'redirectUri' => ?string]
+// your view receives ['iframeUrls' => array, 'redirectUri' => ?string]
 ```
+
+The `<x-identity::front-channel-logout>` component renders the hidden iframes and the JS that redirects once they have loaded (or after a timeout). If you don't register a layout, the package renders a minimal default page built from the same component.
 
 ## Configuration
 

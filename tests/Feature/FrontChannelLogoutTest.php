@@ -6,6 +6,7 @@ use Chiiya\LaravelIdentity\Session\OidcSession;
 use Chiiya\LaravelIdentity\Tests\Fixtures\TestClient;
 use Chiiya\LaravelIdentity\Tests\Fixtures\TestUser;
 use Chiiya\LaravelIdentity\Tests\TestCase;
+use Illuminate\Support\Facades\Blade;
 use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
 
@@ -73,6 +74,20 @@ class FrontChannelLogoutTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('/dashboard', escape: false);
+    }
+
+    public function test_front_channel_logout_component_is_embeddable(): void
+    {
+        // Apps can drop the mechanism into their own page without reimplementing it.
+        $html = Blade::render(
+            '<x-identity::front-channel-logout :urls="$urls" redirect="/done" />',
+            ['urls' => ['https://a.example.com/fc', 'https://b.example.com/fc']],
+        );
+
+        $this->assertStringContainsString('https://a.example.com/fc', $html);
+        $this->assertStringContainsString('https://b.example.com/fc', $html);
+        $this->assertStringContainsString('<iframe', $html);
+        $this->assertStringContainsString('/done', $html);
     }
 
     protected function getEnvironmentSetUp($app): void

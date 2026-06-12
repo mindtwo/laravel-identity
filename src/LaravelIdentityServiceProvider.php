@@ -29,6 +29,7 @@ use Chiiya\LaravelIdentity\Session\SidManager;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;
 use Laravel\Passport\Bridge\AuthCodeRepository as PassportAuthCodeRepository;
 use Laravel\Passport\Http\Controllers\AuthorizationController as PassportAuthorizationController;
@@ -97,6 +98,10 @@ class LaravelIdentityServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        // Expose the front-channel logout mechanism as <x-identity::front-channel-logout>
+        // so apps can embed it in their own page instead of reimplementing the iframes.
+        Blade::anonymousComponentNamespace('identity::components', 'identity');
+
         // Swap Passport's BearerTokenResponse so token endpoint responses include id_token.
         Passport::useAuthorizationServerResponseType($this->app->make(IdTokenResponseType::class));
 
