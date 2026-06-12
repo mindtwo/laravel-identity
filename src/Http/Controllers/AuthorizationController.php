@@ -53,7 +53,20 @@ class AuthorizationController extends PassportAuthorizationController
             // OIDC max_age: re-authenticate when the existing session is older than
             // the requested max_age, falling back to the client's registered
             // default_max_age (Core 1.0 §2, §3.1.2.1).
-            $this->enforceMaxAge($this->effectiveMaxAge($context, $client), $authTime, $request);
+            if ($this->mustReauthenticate($this->effectiveMaxAge($context, $client), $authTime, $request)) {
+                $this->guard->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                // prompt=none forbids any UI, so hand back to Passport as a guest:
+                // it converts that into a login_required error redirect to the RP.
+                // Otherwise force an interactive login, mirroring prompt=login.
+                if (! $this->promptRequests($context, 'none')) {
+                    $this->promptForLogin($request);
+                }
+
+                return parent::authorize($psrRequest, $request, $psrResponse, $viewResponse);
+            }
 
             if ($client instanceof Client) {
                 // Mint the session id here (the web session exists) and stash it with
@@ -85,28 +98,30 @@ class AuthorizationController extends PassportAuthorizationController
         return null;
     }
 
-    private function enforceMaxAge(?int $maxAge, DateTimeImmutable $authTime, Request $request): void
+    private function mustReauthenticate(?int $maxAge, DateTimeImmutable $authTime, Request $request): bool
     {
         if ($maxAge === null) {
-            return;
+            return false;
         }
 
+        // Set by Passport's promptForLogin(): the user just re-authenticated, so
+        // the elapsed time is about to be reset — do not force another round.
         if ($request->session()->get('promptedForLogin', false)) {
-            return;
+            return false;
         }
 
         $elapsed = new DateTimeImmutable()->getTimestamp() - $authTime->getTimestamp();
 
-        if ($elapsed <= $maxAge) {
-            return;
+        return $elapsed > $maxAge;
+    }
+
+    private function promptRequests(AuthRequestContext $context, string $value): bool
+    {
+        if ($context->prompt === null) {
+            return false;
         }
 
-        // Force a fresh login, mirroring Passport's prompt=login handling.
-        $this->guard->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        $this->promptForLogin($request);
+        return in_array($value, preg_split('/\s+/', mb_trim($context->prompt)) ?: [], strict: true);
     }
 
     private function resolveAuthTime(OAuthenticatable $user): DateTimeImmutable
