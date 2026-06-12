@@ -55,7 +55,7 @@ class JwksBuilder
         }
 
         return match (true) {
-            $material->algorithm->isRsa(), $material->algorithm->isPss() => $this->rsaJwk($details, $material),
+            $material->algorithm->isRsa() => $this->rsaJwk($details, $material),
             $material->algorithm->isEc() => $this->ecJwk($details, $material),
             default => throw new RuntimeException(
                 "Unsupported algorithm for JWK export: {$material->algorithm->value}",

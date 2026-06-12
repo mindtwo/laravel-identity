@@ -10,9 +10,6 @@ use Lcobucci\JWT\Signer\Ecdsa\Sha256 as EcSha256;
 use Lcobucci\JWT\Signer\Ecdsa\Sha384 as EcSha384;
 use Lcobucci\JWT\Signer\Ecdsa\Sha512 as EcSha512;
 use Lcobucci\JWT\Signer\Key\InMemory;
-use Lcobucci\JWT\Signer\Rsa\Pss\Sha256 as PssSha256;
-use Lcobucci\JWT\Signer\Rsa\Pss\Sha384 as PssSha384;
-use Lcobucci\JWT\Signer\Rsa\Pss\Sha512 as PssSha512;
 use Lcobucci\JWT\Signer\Rsa\Sha256 as RsaSha256;
 use Lcobucci\JWT\Signer\Rsa\Sha384 as RsaSha384;
 use Lcobucci\JWT\Signer\Rsa\Sha512 as RsaSha512;
@@ -91,9 +88,6 @@ class JwtValidator
             Algorithm::RS256 => new RsaSha256,
             Algorithm::RS384 => new RsaSha384,
             Algorithm::RS512 => new RsaSha512,
-            Algorithm::PS256 => new PssSha256,
-            Algorithm::PS384 => new PssSha384,
-            Algorithm::PS512 => new PssSha512,
             Algorithm::ES256 => EcSha256::create(),
             Algorithm::ES384 => EcSha384::create(),
             Algorithm::ES512 => EcSha512::create(),

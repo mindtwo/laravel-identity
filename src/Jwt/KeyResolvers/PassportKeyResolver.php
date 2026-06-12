@@ -3,6 +3,7 @@
 namespace Chiiya\LaravelIdentity\Jwt\KeyResolvers;
 
 use Chiiya\LaravelIdentity\Contracts\KeyResolver;
+use Chiiya\LaravelIdentity\Exceptions\UnsupportedSigningAlgorithm;
 use Chiiya\LaravelIdentity\Jwt\Algorithm;
 use Chiiya\LaravelIdentity\Jwt\KeyMaterial;
 use RuntimeException;
@@ -13,7 +14,22 @@ class PassportKeyResolver implements KeyResolver
 
     public function current(?Algorithm $preferred = null): KeyMaterial
     {
-        return $this->cached ??= $this->load();
+        $base = $this->cached ??= $this->load();
+
+        if (! $preferred instanceof Algorithm || $preferred === $base->algorithm) {
+            return $base;
+        }
+
+        // Passport's signing key is RSA, so it can produce every RS* variant from
+        // the same key material — only the digest differs.
+        if (! $preferred->isRsa()) {
+            throw new UnsupportedSigningAlgorithm(
+                "The Passport signing key cannot issue {$preferred->value} tokens. "
+                .'Register a custom KeyResolver to support EC algorithms.',
+            );
+        }
+
+        return new KeyMaterial($base->privateKey, $base->publicKey, $base->kid, $preferred);
     }
 
     public function all(): iterable
@@ -30,7 +46,8 @@ class PassportKeyResolver implements KeyResolver
 
     public function supportedAlgs(): array
     {
-        return [$this->current()->algorithm->value];
+        // A single RSA key supports all RSASSA-PKCS1 (RS*) algorithms.
+        return [Algorithm::RS256->value, Algorithm::RS384->value, Algorithm::RS512->value];
     }
 
     private function load(): KeyMaterial
