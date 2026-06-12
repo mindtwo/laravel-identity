@@ -17,11 +17,9 @@ class HasOidcMetadataTest extends TestCase
         $this->assertSame(SubjectType::Public, $client->getSubjectType());
         $this->assertFalse($client->isFirstParty());
         $this->assertFalse($client->requiresLogoutSession());
-        $this->assertFalse($client->requiresAuthTimeClaim());
         $this->assertSame([], $client->getPostLogoutRedirectUris());
         $this->assertNull($client->getFrontchannelLogoutUri());
         $this->assertNull($client->getSectorIdentifierUri());
-        $this->assertSame('web', $client->getApplicationType());
         $this->assertSame((int) config('identity.id_token_lifetime', 3600), $client->getIdTokenLifetimeInSeconds());
     }
 

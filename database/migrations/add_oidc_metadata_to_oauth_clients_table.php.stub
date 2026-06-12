@@ -23,12 +23,8 @@ return new class extends Migration
                 $table->boolean('frontchannel_logout_session_required')->default(false)->after('frontchannel_logout_uri');
             }
 
-            if (! Schema::hasColumn('oauth_clients', 'backchannel_logout_uri')) {
-                $table->string('backchannel_logout_uri', 2048)->nullable()->after('frontchannel_logout_session_required');
-            }
-
             if (! Schema::hasColumn('oauth_clients', 'post_logout_redirect_uris')) {
-                $table->json('post_logout_redirect_uris')->nullable()->after('backchannel_logout_uri');
+                $table->json('post_logout_redirect_uris')->nullable()->after('frontchannel_logout_session_required');
             }
 
             if (! Schema::hasColumn('oauth_clients', 'id_token_signed_response_alg')) {
@@ -43,12 +39,8 @@ return new class extends Migration
                 $table->string('sector_identifier_uri', 2048)->nullable()->after('subject_type');
             }
 
-            if (! Schema::hasColumn('oauth_clients', 'application_type')) {
-                $table->string('application_type', 10)->nullable()->after('sector_identifier_uri');
-            }
-
             if (! Schema::hasColumn('oauth_clients', 'id_token_lifetime')) {
-                $table->unsignedInteger('id_token_lifetime')->nullable()->after('application_type');
+                $table->unsignedInteger('id_token_lifetime')->nullable()->after('sector_identifier_uri');
             }
 
             if (! Schema::hasColumn('oauth_clients', 'first_party')) {
@@ -57,14 +49,6 @@ return new class extends Migration
 
             if (! Schema::hasColumn('oauth_clients', 'default_max_age')) {
                 $table->unsignedInteger('default_max_age')->nullable()->after('first_party');
-            }
-
-            if (! Schema::hasColumn('oauth_clients', 'require_auth_time_claim')) {
-                $table->boolean('require_auth_time_claim')->default(false)->after('default_max_age');
-            }
-
-            if (! Schema::hasColumn('oauth_clients', 'initiate_login_uri')) {
-                $table->string('initiate_login_uri', 2048)->nullable()->after('require_auth_time_claim');
             }
         });
     }
@@ -79,17 +63,13 @@ return new class extends Migration
             $columns = [
                 'frontchannel_logout_uri',
                 'frontchannel_logout_session_required',
-                'backchannel_logout_uri',
                 'post_logout_redirect_uris',
                 'id_token_signed_response_alg',
                 'subject_type',
                 'sector_identifier_uri',
-                'application_type',
                 'id_token_lifetime',
                 'first_party',
                 'default_max_age',
-                'require_auth_time_claim',
-                'initiate_login_uri',
             ];
 
             foreach ($columns as $column) {

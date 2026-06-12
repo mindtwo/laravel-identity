@@ -14,17 +14,13 @@ use Laravel\Passport\Scope;
  *
  * @property string|null $frontchannel_logout_uri
  * @property bool $frontchannel_logout_session_required
- * @property string|null $backchannel_logout_uri
  * @property array<int, string>|null $post_logout_redirect_uris
  * @property string|null $id_token_signed_response_alg
  * @property string|null $subject_type
  * @property string|null $sector_identifier_uri
- * @property string|null $application_type
  * @property int|null $id_token_lifetime
  * @property bool $first_party
  * @property int|null $default_max_age
- * @property bool $require_auth_time_claim
- * @property string|null $initiate_login_uri
  */
 trait HasOidcMetadata
 {
@@ -33,7 +29,6 @@ trait HasOidcMetadata
         $this->mergeCasts([
             'frontchannel_logout_session_required' => 'boolean',
             'first_party' => 'boolean',
-            'require_auth_time_claim' => 'boolean',
             'post_logout_redirect_uris' => 'array',
         ]);
     }
@@ -46,11 +41,6 @@ trait HasOidcMetadata
     public function requiresLogoutSession(): bool
     {
         return (bool) $this->frontchannel_logout_session_required;
-    }
-
-    public function getBackchannelLogoutUri(): ?string
-    {
-        return $this->backchannel_logout_uri;
     }
 
     /**
@@ -81,11 +71,6 @@ trait HasOidcMetadata
         return $this->sector_identifier_uri;
     }
 
-    public function getApplicationType(): string
-    {
-        return $this->application_type ?? 'web';
-    }
-
     public function getIdTokenLifetimeInSeconds(): int
     {
         return $this->id_token_lifetime ?? (int) config('identity.id_token_lifetime', 3600);
@@ -107,15 +92,5 @@ trait HasOidcMetadata
     public function getDefaultMaxAge(): ?int
     {
         return $this->default_max_age !== null ? (int) $this->default_max_age : null;
-    }
-
-    public function requiresAuthTimeClaim(): bool
-    {
-        return (bool) $this->require_auth_time_claim;
-    }
-
-    public function getInitiateLoginUri(): ?string
-    {
-        return $this->initiate_login_uri;
     }
 }
