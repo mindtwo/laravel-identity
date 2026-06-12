@@ -2,6 +2,7 @@
 
 namespace Chiiya\LaravelIdentity\Tests;
 
+use Chiiya\LaravelIdentity\Identity;
 use Chiiya\LaravelIdentity\LaravelIdentityServiceProvider;
 use Chiiya\LaravelIdentity\Tests\Fixtures\TestUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -13,6 +14,8 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        Identity::reset();
 
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'Chiiya\LaravelIdentity\Tests\Factories\\'.class_basename($modelName).'Factory',
