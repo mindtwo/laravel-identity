@@ -2,6 +2,7 @@
 
 namespace Chiiya\LaravelIdentity\Logout;
 
+use Chiiya\LaravelIdentity\Identity;
 use Chiiya\LaravelIdentity\Session\OidcSession;
 use Illuminate\Database\Eloquent\Collection;
 use Laravel\Passport\Client;
@@ -65,7 +66,7 @@ class FrontChannelOrchestrator
             return $uri;
         }
 
-        $issuer = config('identity.issuer') ?: config('app.url');
+        $issuer = Identity::issuer();
         $separator = str_contains($uri, '?') ? '&' : '?';
 
         return $uri.$separator.http_build_query([

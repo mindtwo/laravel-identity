@@ -65,6 +65,16 @@ class Identity
     }
 
     /**
+     * The OpenID Provider issuer identifier. Single source of truth so the value
+     * is byte-for-byte identical across the discovery document, id_token `iss`,
+     * introspection, and logout validation — RPs compare it by exact string.
+     */
+    public static function issuer(): string
+    {
+        return config('identity.issuer') ?: config('app.url');
+    }
+
+    /**
      * Determine whether a client is first-party (and may skip consent). Defers to
      * the registered resolver when set, otherwise falls back to the OIDC metadata
      * trait's `isFirstParty()` flag when available.

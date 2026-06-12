@@ -3,6 +3,7 @@
 namespace Chiiya\LaravelIdentity\Jwt;
 
 use Chiiya\LaravelIdentity\Contracts\KeyResolver;
+use Chiiya\LaravelIdentity\Identity;
 use Chiiya\LaravelIdentity\Oidc\IdTokenContext;
 use Lcobucci\JWT\Encoding\ChainedFormatter;
 use Lcobucci\JWT\Encoding\JoseEncoder;
@@ -54,7 +55,7 @@ class JwtIssuer
 
     public function issuer(): string
     {
-        return config('identity.issuer') ?: config('app.url');
+        return Identity::issuer();
     }
 
     private function signerFor(Algorithm $algorithm): Signer

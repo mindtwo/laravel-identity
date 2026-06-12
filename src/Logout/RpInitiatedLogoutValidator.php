@@ -4,6 +4,7 @@ namespace Chiiya\LaravelIdentity\Logout;
 
 use Chiiya\LaravelIdentity\Exceptions\InvalidIdTokenHint;
 use Chiiya\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
+use Chiiya\LaravelIdentity\Identity;
 use Chiiya\LaravelIdentity\Jwt\JwtValidator;
 use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
@@ -51,7 +52,7 @@ class RpInitiatedLogoutValidator
             throw new InvalidRpLogoutRequest('Invalid id_token_hint: '.$e->getMessage(), $e->getCode(), previous: $e);
         }
 
-        $issuer = config('identity.issuer') ?: config('app.url');
+        $issuer = Identity::issuer();
 
         if ($token->claims()->get('iss') !== $issuer) {
             throw new InvalidRpLogoutRequest('id_token_hint was not issued by this server.');

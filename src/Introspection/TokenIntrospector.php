@@ -3,6 +3,7 @@
 namespace Chiiya\LaravelIdentity\Introspection;
 
 use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
+use Chiiya\LaravelIdentity\Identity;
 use Chiiya\LaravelIdentity\Oidc\UserProvider;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
@@ -103,7 +104,7 @@ readonly class TokenIntrospector
      */
     private function buildActivePayload(Token $token): array
     {
-        $issuer = config('identity.issuer') ?: config('app.url');
+        $issuer = Identity::issuer();
 
         $payload = [
             'active' => true,

@@ -5,6 +5,7 @@ namespace Chiiya\LaravelIdentity\Discovery;
 use Chiiya\LaravelIdentity\Contracts\DiscoveryDocumentBuilder;
 use Chiiya\LaravelIdentity\Contracts\KeyResolver;
 use Chiiya\LaravelIdentity\Contracts\ScopeRegistrar;
+use Chiiya\LaravelIdentity\Identity;
 
 class DefaultDiscoveryBuilder implements DiscoveryDocumentBuilder
 {
@@ -15,7 +16,7 @@ class DefaultDiscoveryBuilder implements DiscoveryDocumentBuilder
 
     public function build(): array
     {
-        $issuer = config('identity.issuer') ?: config('app.url');
+        $issuer = Identity::issuer();
 
         // Drop only absent (null) values — false booleans like
         // *_parameter_supported must remain in the document.
