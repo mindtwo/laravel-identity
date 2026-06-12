@@ -34,7 +34,12 @@ class DefaultDiscoveryBuilder implements DiscoveryDocumentBuilder
             'id_token_signing_alg_values_supported' => $this->keyResolver->supportedAlgs(),
             'scopes_supported' => $this->scopeRegistrar->all(),
             'token_endpoint_auth_methods_supported' => ['client_secret_basic', 'client_secret_post'],
-            'claims_supported' => $this->scopeRegistrar->allClaims(),
+            // Scope-mapped claims plus the always-emitted id_token claims that are
+            // not tied to a scope (Discovery 1.0 §3; list is non-exhaustive).
+            'claims_supported' => array_values(array_unique([
+                'sub', 'iss', 'aud', 'exp', 'iat', 'auth_time',
+                ...$this->scopeRegistrar->allClaims(),
+            ])),
             'code_challenge_methods_supported' => ['S256'],
             'request_parameter_supported' => false,
             // Defaults to true per Discovery 1.0; advertised explicitly since this OP
