@@ -69,4 +69,19 @@ return [
     |
     */
     'register_openid_scope' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Signing Keys
+    |--------------------------------------------------------------------------
+    |
+    | By default ID tokens are signed with the Passport RSA key (supporting all
+    | RS* algorithms). To use dedicated keys — e.g. for EC algorithms or key
+    | rotation — list them here, current (signing) key first. When non-empty,
+    | the ConfigKeyResolver is used instead of the PassportKeyResolver.
+    |
+    | Each entry: ['private' => '<PEM>', 'public' => '<PEM>', 'algorithm' => 'RS256']
+    |
+    */
+    'keys' => [],
 ];

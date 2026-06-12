@@ -9,16 +9,17 @@ use InvalidArgumentException;
 use RuntimeException;
 
 /**
- * Multi-key resolver for key rotation scenarios.
+ * Multi-key resolver for EC algorithms and key-rotation scenarios.
  *
- * Configure in identity.php or via Identity::keys([...]).
- * Keys are ordered with current (signing) key first.
+ * Activated automatically when the `identity.keys` config array is non-empty.
+ * Keys are ordered with the current (signing) key first; retiring keys remain
+ * published in the JWKS so previously issued tokens still verify.
  *
- * @example
- *   Identity::keys([
- *       ['private' => '...', 'public' => '...', 'algorithm' => 'RS256'],
- *       ['private' => '...', 'public' => '...', 'algorithm' => 'RS256'], // retiring key
- *   ]);
+ * @example config/identity.php
+ *   'keys' => [
+ *       ['private' => '<PEM>', 'public' => '<PEM>', 'algorithm' => 'ES256'],
+ *       ['private' => '<PEM>', 'public' => '<PEM>', 'algorithm' => 'RS256'], // retiring key
+ *   ],
  */
 class ConfigKeyResolver implements KeyResolver
 {

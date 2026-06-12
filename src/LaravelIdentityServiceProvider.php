@@ -14,6 +14,7 @@ use Chiiya\LaravelIdentity\Introspection\TokenIntrospector;
 use Chiiya\LaravelIdentity\Jwks\JwksBuilder;
 use Chiiya\LaravelIdentity\Jwt\JwtIssuer;
 use Chiiya\LaravelIdentity\Jwt\JwtValidator;
+use Chiiya\LaravelIdentity\Jwt\KeyResolvers\ConfigKeyResolver;
 use Chiiya\LaravelIdentity\Jwt\KeyResolvers\PassportKeyResolver;
 use Chiiya\LaravelIdentity\Logout\FrontChannelOrchestrator;
 use Chiiya\LaravelIdentity\Logout\RpInitiatedLogoutValidator;
@@ -62,8 +63,15 @@ class LaravelIdentityServiceProvider extends PackageServiceProvider
         // Swap Passport's auth code repository so the OIDC nonce reaches the id_token.
         $this->app->bind(PassportAuthCodeRepository::class, AuthCodeRepository::class);
 
-        // Contracts → default implementations.
-        $this->app->singleton(KeyResolver::class, PassportKeyResolver::class);
+        // Contracts → default implementations. Dedicated keys (EC / rotation) are
+        // used when configured, otherwise the Passport RSA key backs every RS* alg.
+        $this->app->singleton(KeyResolver::class, function ($app): KeyResolver {
+            $keys = (array) config('identity.keys', []);
+
+            return $keys === []
+                ? $app->make(PassportKeyResolver::class)
+                : new ConfigKeyResolver($keys);
+        });
         $this->app->singleton(ScopeRegistrar::class, StandardScopeRegistrar::class);
         $this->app->singleton(SubjectIdentifierResolver::class, ClientAwareSubjectResolver::class);
         $this->app->singleton(SessionIdResolver::class, SidManager::class);
