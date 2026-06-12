@@ -141,21 +141,26 @@ class EndSessionController
         }
 
         $this->events->dispatch($event);
-        $this->sidResolver->invalidate($user);
 
-        $fcClients = $this->orchestrator->relevantClients($user);
+        // Collect front-channel clients and their sids BEFORE revoking sessions,
+        // otherwise the active sessions (and sids) are gone when we build iframes.
+        $iframeUrls = $this->orchestrator->relevantClients($user)
+            ->map(
+                fn (Client $fc): string => $this->orchestrator->buildIframeUrl($fc, $this->sidResolver->find(
+                    $user,
+                    $fc,
+                )),
+            )
+            ->values()
+            ->all();
+
+        $this->sidResolver->invalidate($user);
 
         // Perform Laravel logout.
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        if ($fcClients->isNotEmpty()) {
-            $iframeUrls = $fcClients->map(function (Client $fc) use ($user): string {
-                $sid = $this->sidResolver->find($user, $fc);
-
-                return $this->orchestrator->buildIframeUrl($fc, $sid);
-            })->values()->all();
-
+        if ($iframeUrls !== []) {
             $finalRedirect = $this->buildFinalRedirectUrl($redirectUri, $state);
 
             $layout = Identity::$frontChannelLogoutLayout;
