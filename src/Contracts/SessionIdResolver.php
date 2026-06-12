@@ -13,11 +13,6 @@ interface SessionIdResolver
     public function forCurrentRequest(OAuthenticatable $user, Client $client): string;
 
     /**
-     * Return the `sid` for a given (user, client) pair if one exists.
-     */
-    public function find(OAuthenticatable $user, Client $client): ?string;
-
-    /**
      * Revoke all active session ids for the given user (called on logout).
      */
     public function invalidate(OAuthenticatable $user): void;

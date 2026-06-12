@@ -40,19 +40,6 @@ class SidManager implements SessionIdResolver
         return $session->id;
     }
 
-    public function find(OAuthenticatable $user, Client $client): ?string
-    {
-        $sessionId = $this->request->hasSession() ? $this->request->session()->getId() : '';
-
-        $session = OidcSession::where('user_id', $user->getAuthIdentifier())
-            ->where('client_id', (string) $client->getKey())
-            ->where('laravel_session_id', $sessionId)
-            ->whereNull('revoked_at')
-            ->first();
-
-        return $session?->id;
-    }
-
     public function invalidate(OAuthenticatable $user): void
     {
         OidcSession::where('user_id', $user->getAuthIdentifier())
