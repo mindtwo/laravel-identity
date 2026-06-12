@@ -6,6 +6,7 @@ use Chiiya\LaravelIdentity\Session\OidcSession;
 use Illuminate\Database\Eloquent\Collection;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
+use Laravel\Passport\Passport;
 
 class FrontChannelOrchestrator
 {
@@ -27,7 +28,8 @@ class FrontChannelOrchestrator
         }
 
         // @var Collection<int, Client>
-        return Client::whereIn('id', $clientIds)
+        return Passport::clientModel()::query()
+            ->whereIn('id', $clientIds)
             ->whereNotNull('frontchannel_logout_uri')
             ->get();
     }

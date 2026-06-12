@@ -6,8 +6,8 @@ use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
 use Chiiya\LaravelIdentity\Oidc\ClaimAggregator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
+use Laravel\Passport\Passport;
 
 class UserInfoController
 {
@@ -24,7 +24,7 @@ class UserInfoController
         $scopes = $token?->scopes ?? [];
         $clientId = $token?->client_id;
 
-        $client = $clientId !== null ? Client::find($clientId) : null;
+        $client = $clientId !== null ? Passport::clientModel()::query()->find($clientId) : null;
         $subject = $client !== null
             ? $this->subjectResolver->resolve($user, $client)
             : (string) $user->getAuthIdentifier();

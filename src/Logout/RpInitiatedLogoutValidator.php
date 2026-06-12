@@ -6,6 +6,7 @@ use Chiiya\LaravelIdentity\Exceptions\InvalidIdTokenHint;
 use Chiiya\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
 use Chiiya\LaravelIdentity\Jwt\JwtValidator;
 use Laravel\Passport\Client;
+use Laravel\Passport\Passport;
 
 class RpInitiatedLogoutValidator
 {
@@ -85,7 +86,7 @@ class RpInitiatedLogoutValidator
             throw new InvalidRpLogoutRequest('Cannot determine client from id_token_hint.');
         }
 
-        $client = Client::find($clientId);
+        $client = Passport::clientModel()::query()->find($clientId);
 
         if ($client === null) {
             throw new InvalidRpLogoutRequest("Unknown client: {$clientId}");
@@ -109,7 +110,7 @@ class RpInitiatedLogoutValidator
         ?string $postLogoutRedirectUri,
         ?string $state,
     ): LogoutRequest {
-        $client = Client::find($clientId);
+        $client = Passport::clientModel()::query()->find($clientId);
 
         if ($client === null) {
             throw new InvalidRpLogoutRequest("Unknown client: {$clientId}");

@@ -9,8 +9,8 @@ use Chiiya\LaravelIdentity\Jwt\Algorithm;
 use Chiiya\LaravelIdentity\Jwt\JwtIssuer;
 use DateTimeImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
-use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
+use Laravel\Passport\Passport;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\ResponseTypes\BearerTokenResponse;
 use Throwable;
@@ -52,7 +52,7 @@ class IdTokenResponseType extends BearerTokenResponse
         }
 
         $clientId = $accessToken->getClient()->getIdentifier();
-        $client = Client::find($clientId);
+        $client = Passport::clientModel()::query()->find($clientId);
 
         if ($client === null) {
             return [];

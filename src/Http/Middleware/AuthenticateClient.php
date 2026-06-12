@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Passport\Client;
+use Laravel\Passport\Passport;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -58,7 +59,7 @@ class AuthenticateClient
 
     private function validateClient(string $clientId, string $secret): ?Client
     {
-        $client = Client::find($clientId);
+        $client = Passport::clientModel()::query()->find($clientId);
 
         if ($client === null || $client->revoked) {
             return null;
