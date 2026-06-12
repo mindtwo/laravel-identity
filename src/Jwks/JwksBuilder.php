@@ -87,10 +87,13 @@ class JwksBuilder
      */
     private function ecJwk(array $details, KeyMaterial $material): array
     {
-        $crv = match ($material->algorithm) {
-            Algorithm::ES256 => 'P-256',
-            Algorithm::ES384 => 'P-384',
-            Algorithm::ES512 => 'P-521',
+        // Coordinate octet length per curve (RFC 7518 §6.2.1.2): x and y MUST be
+        // the full fixed size for the curve. OpenSSL may strip leading zero bytes,
+        // so left-pad to avoid emitting a short coordinate that strict RPs reject.
+        [$crv, $size] = match ($material->algorithm) {
+            Algorithm::ES256 => ['P-256', 32],
+            Algorithm::ES384 => ['P-384', 48],
+            Algorithm::ES512 => ['P-521', 66],
             default => throw new RuntimeException("Unsupported EC algorithm: {$material->algorithm->value}"),
         };
 
@@ -100,8 +103,24 @@ class JwksBuilder
             'alg' => $material->algorithm->value,
             'kid' => $material->kid,
             'crv' => $crv,
-            'x' => JwkEncoder::base64url($details['ec']['x']),
-            'y' => JwkEncoder::base64url($details['ec']['y']),
+            'x' => JwkEncoder::base64url($this->padCoordinate($details['ec']['x'], $size)),
+            'y' => JwkEncoder::base64url($this->padCoordinate($details['ec']['y'], $size)),
         ];
+    }
+
+    /**
+     * Left-pad a binary coordinate to the curve's fixed octet width. Byte-based
+     * (8bit) on purpose: EC coordinates are raw octets, not text, so multibyte
+     * string padding would miscount and corrupt the value.
+     */
+    private function padCoordinate(string $coordinate, int $size): string
+    {
+        $length = mb_strlen($coordinate, '8bit');
+
+        if ($length >= $size) {
+            return $coordinate;
+        }
+
+        return str_repeat("\x00", $size - $length).$coordinate;
     }
 }

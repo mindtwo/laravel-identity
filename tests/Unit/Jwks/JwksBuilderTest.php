@@ -38,6 +38,32 @@ class JwksBuilderTest extends TestCase
         $this->assertArrayHasKey('e', $jwk);
     }
 
+    public function test_builds_ec_jwk_with_full_width_coordinates(): void
+    {
+        $key = openssl_pkey_new([
+            'private_key_type' => OPENSSL_KEYTYPE_EC,
+            'curve_name' => 'prime256v1',
+        ]);
+        openssl_pkey_export($key, $privateKey);
+        $publicKey = openssl_pkey_get_details($key)['key'];
+
+        $material = new KeyMaterial($privateKey, $publicKey, 'ec-kid', Algorithm::ES256);
+
+        $resolver = $this->mock(KeyResolver::class, function (MockInterface $mock) use ($material): void {
+            $mock->shouldReceive('all')->andReturn([$material]);
+        });
+
+        $jwk = (new JwksBuilder($resolver))->build()['keys'][0];
+
+        $this->assertSame('EC', $jwk['kty']);
+        $this->assertSame('P-256', $jwk['crv']);
+        $this->assertSame('ES256', $jwk['alg']);
+
+        // P-256 coordinates MUST decode to exactly 32 octets (RFC 7518 §6.2.1.2).
+        $this->assertSame(32, mb_strlen($this->base64urlDecode($jwk['x']), '8bit'));
+        $this->assertSame(32, mb_strlen($this->base64urlDecode($jwk['y']), '8bit'));
+    }
+
     public function test_etag_is_deterministic(): void
     {
         $kid = 'abc123';
@@ -84,5 +110,10 @@ class JwksBuilderTest extends TestCase
         $details = openssl_pkey_get_details($key);
         $this->testPrivateKey = $privateKey;
         $this->testPublicKey = $details['key'];
+    }
+
+    private function base64urlDecode(string $value): string
+    {
+        return (string) base64_decode(strtr($value, '-_', '+/'), true);
     }
 }
