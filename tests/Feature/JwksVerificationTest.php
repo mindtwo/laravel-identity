@@ -57,6 +57,10 @@ class JwksVerificationTest extends TestCase
         );
 
         $this->assertTrue($valid, 'id_token signature must verify against the published JWKS.');
+
+        // An RP also matches iss by exact string against the discovery document.
+        $discoveryIssuer = $this->getJson('/.well-known/openid-configuration')->json('issuer');
+        $this->assertSame($discoveryIssuer, $parsed->claims()->get('iss'));
     }
 
     protected function getEnvironmentSetUp($app): void
