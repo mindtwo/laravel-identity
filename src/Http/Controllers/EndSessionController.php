@@ -4,6 +4,7 @@ namespace Chiiya\LaravelIdentity\Http\Controllers;
 
 use Chiiya\LaravelIdentity\Contracts\LogoutEventListener;
 use Chiiya\LaravelIdentity\Contracts\SessionIdResolver;
+use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
 use Chiiya\LaravelIdentity\Events\UserLoggedOut;
 use Chiiya\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
 use Chiiya\LaravelIdentity\Http\Requests\EndSessionRequest;
@@ -25,6 +26,7 @@ class EndSessionController
         private readonly RpInitiatedLogoutValidator $validator,
         private readonly FrontChannelOrchestrator $orchestrator,
         private readonly SessionIdResolver $sidResolver,
+        private readonly SubjectIdentifierResolver $subjectResolver,
         private readonly Container $container,
         private readonly Dispatcher $events,
     ) {}
@@ -57,11 +59,13 @@ class EndSessionController
             abort(400, 'Invalid logout request.');
         }
 
-        // Validate subject matches current user when a token hint is provided.
+        // Validate the id_token_hint subject matches the current user. The sub is
+        // client-specific (e.g. pairwise), so resolve it through the same resolver
+        // used at issuance rather than comparing against the raw user identifier.
         if (! empty($logoutRequest->subject)) {
-            $userId = (string) $request->user()->getAuthIdentifier();
+            $expected = $this->subjectResolver->resolve($request->user(), $logoutRequest->client);
 
-            if ($logoutRequest->subject !== $userId) {
+            if (! hash_equals($expected, $logoutRequest->subject)) {
                 abort(403, 'The id_token_hint subject does not match the current user.');
             }
         }
