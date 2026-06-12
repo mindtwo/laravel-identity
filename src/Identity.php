@@ -4,6 +4,7 @@ namespace Chiiya\LaravelIdentity;
 
 use Chiiya\LaravelIdentity\Jwt\Algorithm;
 use Closure;
+use Laravel\Passport\Client;
 
 class Identity
 {
@@ -19,9 +20,7 @@ class Identity
      */
     public static Closure|string|null $frontChannelLogoutLayout = null;
 
-    /**
-     * Custom callback to determine whether a client should skip the consent screen.
-     */
+    /** Custom callback to determine whether a client should skip the consent screen. */
     public static ?Closure $firstPartyClientResolver = null;
 
     /**
@@ -63,6 +62,20 @@ class Identity
     public static function signingAlgorithm(Algorithm $algorithm): void
     {
         static::$defaultSigningAlgorithm = $algorithm;
+    }
+
+    /**
+     * Determine whether a client is first-party (and may skip consent). Defers to
+     * the registered resolver when set, otherwise falls back to the OIDC metadata
+     * trait's `isFirstParty()` flag when available.
+     */
+    public static function clientIsFirstParty(Client $client): bool
+    {
+        if (static::$firstPartyClientResolver instanceof Closure) {
+            return (bool) (static::$firstPartyClientResolver)($client);
+        }
+
+        return method_exists($client, 'isFirstParty') && $client->isFirstParty();
     }
 
     /**

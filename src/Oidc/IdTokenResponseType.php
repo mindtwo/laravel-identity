@@ -4,7 +4,7 @@ namespace Chiiya\LaravelIdentity\Oidc;
 
 use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
 use Chiiya\LaravelIdentity\Events\IdTokenIssued;
-use Chiiya\LaravelIdentity\Jwt\Algorithm;
+use Chiiya\LaravelIdentity\Identity;
 use Chiiya\LaravelIdentity\Jwt\JwtIssuer;
 use DateTimeImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -70,7 +70,7 @@ class IdTokenResponseType extends BearerTokenResponse
 
         $algorithm = method_exists($client, 'getIdTokenSigningAlgorithm')
             ? $client->getIdTokenSigningAlgorithm()
-            : Algorithm::RS256;
+            : Identity::$defaultSigningAlgorithm;
 
         $subject = $this->subjectResolver->resolve($user, $client);
 

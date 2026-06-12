@@ -71,10 +71,7 @@ class EndSessionController
         }
 
         // First-party clients may skip confirmation.
-        $isFirstParty = method_exists($logoutRequest->client, 'isFirstParty')
-            && $logoutRequest->client->isFirstParty();
-
-        if ($isFirstParty) {
+        if (Identity::clientIsFirstParty($logoutRequest->client)) {
             return $this->executeLogout(
                 $request,
                 $logoutRequest->client,

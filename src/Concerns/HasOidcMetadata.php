@@ -2,6 +2,7 @@
 
 namespace Chiiya\LaravelIdentity\Concerns;
 
+use Chiiya\LaravelIdentity\Identity;
 use Chiiya\LaravelIdentity\Jwt\Algorithm;
 use Chiiya\LaravelIdentity\Oidc\SubjectType;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -67,7 +68,7 @@ trait HasOidcMetadata
 
     public function getIdTokenSigningAlgorithm(): Algorithm
     {
-        return Algorithm::tryFrom($this->id_token_signed_response_alg ?? '') ?? Algorithm::RS256;
+        return Algorithm::tryFrom($this->id_token_signed_response_alg ?? '') ?? Identity::$defaultSigningAlgorithm;
     }
 
     public function getSubjectType(): SubjectType
@@ -100,7 +101,7 @@ trait HasOidcMetadata
      */
     public function skipsAuthorization(?Authenticatable $user = null, array $scopes = []): bool
     {
-        return $this->isFirstParty();
+        return Identity::clientIsFirstParty($this);
     }
 
     public function getDefaultMaxAge(): ?int
