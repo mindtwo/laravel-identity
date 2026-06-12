@@ -132,9 +132,13 @@ class RpInitiatedLogoutValidator
             return null;
         }
 
-        if (method_exists($client, 'matchesPostLogoutRedirectUri') && ! $client->matchesPostLogoutRedirectUri(
-            $requested,
-        )) {
+        // Fail closed: the URI must be verifiable against the client's registered
+        // post_logout_redirect_uris. A client model without that capability (e.g.
+        // missing the HasOidcMetadata trait) cannot register any, so every URI is
+        // rejected rather than blindly honored — preventing an open redirect
+        // (RP-Initiated Logout 1.0 §3).
+        if (! method_exists($client, 'matchesPostLogoutRedirectUri')
+            || ! $client->matchesPostLogoutRedirectUri($requested)) {
             throw new InvalidRpLogoutRequest('post_logout_redirect_uri is not registered for this client.');
         }
 

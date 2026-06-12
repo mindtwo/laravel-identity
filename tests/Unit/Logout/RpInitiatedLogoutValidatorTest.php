@@ -40,6 +40,35 @@ class RpInitiatedLogoutValidatorTest extends TestCase
         $validator->validate('bad.jwt.here', null, null, null);
     }
 
+    public function test_post_logout_redirect_uri_is_rejected_when_client_cannot_validate_it(): void
+    {
+        // A plain Passport client (without HasOidcMetadata) has no registered
+        // post_logout_redirect_uris, so an unverifiable URI must be rejected —
+        // failing open would be an open redirect (RP-Initiated Logout 1.0 §3).
+        $client = Client::factory()->create();
+
+        $token = new Plain(
+            new DataSet([], ''),
+            new DataSet([
+                'iss' => config('app.url'),
+                'sub' => 'user-123',
+                'aud' => [(string) $client->getKey()],
+            ], ''),
+            new Signature('', ''),
+        );
+
+        $jwtValidator = $this->mock(JwtValidator::class, function (MockInterface $mock) use ($token): void {
+            $mock->shouldReceive('parseAndVerify')->andReturn($token);
+        });
+
+        $validator = new RpInitiatedLogoutValidator($jwtValidator);
+
+        $this->expectException(InvalidRpLogoutRequest::class);
+        $this->expectExceptionMessage('post_logout_redirect_uri');
+
+        $validator->validate('some.valid.token', 'https://evil.example.com/steal', null, null);
+    }
+
     public function test_state_is_preserved_in_logout_request(): void
     {
         $client = Client::factory()->create();
