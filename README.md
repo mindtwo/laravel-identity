@@ -25,14 +25,14 @@ Run Passport's installer first (if you have not already), then publish this pack
 
 ```bash
 php artisan passport:install                                  # oauth_* tables + signing keys
-php artisan vendor:publish --tag=laravel-identity-migrations   # OIDC client columns + oidc_sessions
+php artisan vendor:publish --tag=identity-migrations           # OIDC client columns + oidc_sessions
 php artisan migrate
 ```
 
 The package auto-registers its service provider, routes and views. Publish the config if you need to change defaults:
 
 ```bash
-php artisan vendor:publish --tag=laravel-identity-config
+php artisan vendor:publish --tag=identity-config
 ```
 
 ## Quick start
