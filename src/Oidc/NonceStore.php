@@ -5,60 +5,54 @@ namespace Chiiya\LaravelIdentity\Oidc;
 use DateTimeImmutable;
 use Illuminate\Contracts\Cache\Repository as Cache;
 
+/**
+ * Bridges the nonce (and auth_time) from the authorization request to the
+ * issued id_token by binding it to the authorization code identifier.
+ */
 class NonceStore
 {
     private const PREFIX = 'identity:nonce:';
-    private const PRE_CODE_PREFIX = 'identity:nonce_pre:';
 
-    /** Default TTL: 10 minutes (auth code lifetime) */
+    /** Default TTL: 10 minutes (auth code lifetime). */
     private const TTL = 600;
+
+    /** Auth code identifier captured during the current token exchange. */
+    private ?string $currentAuthCodeId = null;
 
     public function __construct(
         private readonly Cache $cache,
     ) {}
 
     /**
-     * Store nonce + auth_time keyed on a pre-code identifier (state+client+user).
+     * Associate the nonce and auth_time with a freshly persisted auth code.
      */
-    public function storePreCode(
-        string $userId,
-        string $clientId,
-        string $state,
-        ?string $nonce,
-        DateTimeImmutable $authTime,
-    ): void {
-        if ($nonce === null) {
-            return;
-        }
-
-        $key = self::PRE_CODE_PREFIX.hash('sha256', "{$userId}|{$clientId}|{$state}");
-        $this->cache->put($key, [
+    public function bindToAuthCode(string $authCodeId, ?string $nonce, DateTimeImmutable $authTime): void
+    {
+        $this->cache->put(self::PREFIX.$authCodeId, [
             'nonce' => $nonce,
             'auth_time' => $authTime->getTimestamp(),
         ], self::TTL);
     }
 
     /**
-     * Move the nonce from the pre-code key to an auth-code-keyed entry.
-     * Called when the auth code is persisted.
+     * Record the auth code being exchanged so the id_token can resolve its nonce.
      */
-    public function rekeyToAuthCode(string $userId, string $clientId, string $state, string $authCodeId): void
+    public function rememberAuthCode(string $authCodeId): void
     {
-        $preKey = self::PRE_CODE_PREFIX.hash('sha256', "{$userId}|{$clientId}|{$state}");
-        $data = $this->cache->get($preKey);
+        $this->currentAuthCodeId = $authCodeId;
+    }
 
-        if ($data !== null) {
-            $this->cache->put(self::PREFIX.$authCodeId, $data, self::TTL);
-            $this->cache->forget($preKey);
-        }
+    public function currentAuthCodeId(): ?string
+    {
+        return $this->currentAuthCodeId;
     }
 
     /**
-     * Retrieve (and remove) nonce data for the given auth code.
+     * Retrieve (and remove) the nonce data bound to the given auth code.
      *
      * @return array{nonce: ?string, auth_time: int}|null
      */
-    public function retrieve(string $authCodeId): ?array
+    public function pull(string $authCodeId): ?array
     {
         $key = self::PREFIX.$authCodeId;
         $data = $this->cache->get($key);

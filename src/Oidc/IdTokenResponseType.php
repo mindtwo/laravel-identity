@@ -58,7 +58,8 @@ class IdTokenResponseType extends BearerTokenResponse
             return [];
         }
 
-        $nonceData = $this->nonceStore->retrieve($accessToken->getIdentifier());
+        $authCodeId = $this->nonceStore->currentAuthCodeId();
+        $nonceData = $authCodeId !== null ? $this->nonceStore->pull($authCodeId) : null;
         $nonce = $nonceData['nonce'] ?? null;
         $authTimestamp = $nonceData['auth_time'] ?? time();
         $authTime = new DateTimeImmutable()->setTimestamp($authTimestamp);

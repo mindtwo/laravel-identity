@@ -4,7 +4,6 @@ namespace Chiiya\LaravelIdentity\Http\Controllers;
 
 use Chiiya\LaravelIdentity\Events\AuthorizationRequestValidated;
 use Chiiya\LaravelIdentity\Oidc\AuthRequestContext;
-use Chiiya\LaravelIdentity\Oidc\NonceStore;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Contracts\Auth\StatefulGuard;
@@ -27,7 +26,6 @@ class AuthorizationController extends PassportAuthorizationController
         AuthorizationServer $server,
         StatefulGuard $guard,
         ClientRepository $clients,
-        private readonly NonceStore $nonceStore,
         private readonly Dispatcher $events,
     ) {
         parent::__construct($server, $guard, $clients);
@@ -56,16 +54,12 @@ class AuthorizationController extends PassportAuthorizationController
             $client = $this->resolveClientFromRequest($request);
 
             if ($client instanceof Client) {
-                // Persist the nonce so it can be embedded in the issued id_token.
-                if ($context->nonce !== null) {
-                    $this->nonceStore->storePreCode(
-                        (string) $user->getAuthIdentifier(),
-                        (string) $client->getKey(),
-                        (string) $request->input('state', ''),
-                        $context->nonce,
-                        $authTime,
-                    );
-                }
+                // Stash nonce + auth_time so the auth code repository can bind them
+                // to the issued auth code, ultimately reaching the id_token.
+                $request->session()->put('identity.oidc_auth', [
+                    'nonce' => $context->nonce,
+                    'auth_time' => $authTime->getTimestamp(),
+                ]);
 
                 $this->events->dispatch(new AuthorizationRequestValidated($user, $client, $context));
             }

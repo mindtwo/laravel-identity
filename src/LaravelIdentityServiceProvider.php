@@ -2,6 +2,7 @@
 
 namespace Chiiya\LaravelIdentity;
 
+use Chiiya\LaravelIdentity\Bridge\AuthCodeRepository;
 use Chiiya\LaravelIdentity\Contracts\DiscoveryDocumentBuilder;
 use Chiiya\LaravelIdentity\Contracts\KeyResolver;
 use Chiiya\LaravelIdentity\Contracts\ScopeRegistrar;
@@ -28,6 +29,7 @@ use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Laravel\Passport\Bridge\AuthCodeRepository as PassportAuthCodeRepository;
 use Laravel\Passport\Http\Controllers\AuthorizationController as PassportAuthorizationController;
 use Laravel\Passport\Passport;
 use Laravel\Passport\Scope;
@@ -56,6 +58,9 @@ class LaravelIdentityServiceProvider extends PackageServiceProvider
         $this->app->when(AuthorizationController::class)
             ->needs(StatefulGuard::class)
             ->give(fn () => Auth::guard(config('passport.guard')));
+
+        // Swap Passport's auth code repository so the OIDC nonce reaches the id_token.
+        $this->app->bind(PassportAuthCodeRepository::class, AuthCodeRepository::class);
 
         // Contracts → default implementations.
         $this->app->singleton(KeyResolver::class, PassportKeyResolver::class);
