@@ -22,7 +22,7 @@ use Chiiya\LaravelIdentity\Oidc\NonceStore;
 use Chiiya\LaravelIdentity\Oidc\PromptHandler;
 use Chiiya\LaravelIdentity\Oidc\Scopes\StandardClaimProvider;
 use Chiiya\LaravelIdentity\Oidc\Scopes\StandardScopeRegistrar;
-use Chiiya\LaravelIdentity\Oidc\SubjectResolvers\PublicSubjectResolver;
+use Chiiya\LaravelIdentity\Oidc\SubjectResolvers\ClientAwareSubjectResolver;
 use Chiiya\LaravelIdentity\Oidc\UserProvider;
 use Chiiya\LaravelIdentity\Session\SidManager;
 use Illuminate\Contracts\Cache\Repository as Cache;
@@ -52,7 +52,7 @@ class LaravelIdentityServiceProvider extends PackageServiceProvider
         // Contracts → default implementations.
         $this->app->singleton(KeyResolver::class, PassportKeyResolver::class);
         $this->app->singleton(ScopeRegistrar::class, StandardScopeRegistrar::class);
-        $this->app->singleton(SubjectIdentifierResolver::class, PublicSubjectResolver::class);
+        $this->app->singleton(SubjectIdentifierResolver::class, ClientAwareSubjectResolver::class);
         $this->app->singleton(SessionIdResolver::class, SidManager::class);
         $this->app->singleton(DiscoveryDocumentBuilder::class, DefaultDiscoveryBuilder::class);
 
