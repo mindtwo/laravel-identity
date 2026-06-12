@@ -21,14 +21,15 @@ Implemented specifications:
 composer require chiiya/laravel-identity
 ```
 
-Run Passport's installer first (if you have not already), then publish and run this package's migrations:
+Run Passport's installer first (if you have not already), then publish this package's migrations and run them. The migrations alter Passport's `oauth_clients` table, so they are published (not auto-run) to let your app own them and order them after `passport:install`:
 
 ```bash
-php artisan passport:install      # creates oauth_* tables + signing keys
-php artisan migrate               # adds OIDC client columns + oidc_sessions
+php artisan passport:install                                  # oauth_* tables + signing keys
+php artisan vendor:publish --tag=laravel-identity-migrations   # OIDC client columns + oidc_sessions
+php artisan migrate
 ```
 
-The package auto-registers its service provider, routes, views and migrations. Publish the config if you need to change defaults:
+The package auto-registers its service provider, routes and views. Publish the config if you need to change defaults:
 
 ```bash
 php artisan vendor:publish --tag=laravel-identity-config

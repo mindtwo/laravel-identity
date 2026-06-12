@@ -46,8 +46,10 @@ class LaravelIdentityServiceProvider extends PackageServiceProvider
             ->hasConfigFile('identity')
             ->hasViews('identity')
             ->hasRoutes(['web', 'api'])
-            ->discoversMigrations()
-            ->runsMigrations();
+            // Published rather than auto-run: these migrations alter Passport's
+            // own oauth_clients table, so the host application must own them and
+            // control their ordering relative to `passport:install`.
+            ->discoversMigrations();
     }
 
     public function packageRegistered(): void
