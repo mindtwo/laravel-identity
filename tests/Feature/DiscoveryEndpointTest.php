@@ -44,6 +44,17 @@ class DiscoveryEndpointTest extends TestCase
         $response->assertJsonPath('frontchannel_logout_supported', true);
     }
 
+    public function test_unsupported_parameters_are_advertised_as_false(): void
+    {
+        $response = $this->getJson('/.well-known/openid-configuration');
+
+        // These must be present and explicitly false — they default to true per
+        // Discovery 1.0, so omitting them would wrongly imply support.
+        $response->assertJsonPath('request_parameter_supported', false);
+        $response->assertJsonPath('request_uri_parameter_supported', false);
+        $response->assertJsonPath('claims_parameter_supported', false);
+    }
+
     protected function defineDatabaseMigrations(): void
     {
         parent::defineDatabaseMigrations();

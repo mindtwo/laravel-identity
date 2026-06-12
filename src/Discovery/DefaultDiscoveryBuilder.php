@@ -17,6 +17,8 @@ class DefaultDiscoveryBuilder implements DiscoveryDocumentBuilder
     {
         $issuer = config('identity.issuer') ?: config('app.url');
 
+        // Drop only absent (null) values — false booleans like
+        // *_parameter_supported must remain in the document.
         return array_filter([
             'issuer' => $issuer,
             'authorization_endpoint' => route('passport.authorizations.authorize'),
@@ -41,6 +43,6 @@ class DefaultDiscoveryBuilder implements DiscoveryDocumentBuilder
             'claims_parameter_supported' => false,
             'frontchannel_logout_supported' => true,
             'frontchannel_logout_session_supported' => true,
-        ]);
+        ], static fn ($value): bool => $value !== null);
     }
 }

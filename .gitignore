@@ -6,3 +6,6 @@ composer.lock
 .ecs_cache/
 storage/oauth-private.key
 storage/oauth-public.key
+
+# Claude Code local loop/session state
+.claude/*.local.md
