@@ -24,11 +24,15 @@ readonly class TokenIntrospector
     /**
      * Introspect a token, returning an RFC 7662 response payload.
      *
+     * Only access tokens are introspectable: Passport refresh tokens are opaque
+     * encrypted blobs, so the optional `token_type_hint` carries no optimization
+     * value here and is intentionally not part of this signature (RFC 7662 §2.1).
+     *
      * @see https://datatracker.ietf.org/doc/html/rfc7662#section-2.2
      *
      * @return array<string, mixed>
      */
-    public function introspect(string $token, ?string $tokenTypeHint, Client $requestingClient): array
+    public function introspect(string $token, Client $requestingClient): array
     {
         $record = $this->findToken($token);
 

@@ -18,11 +18,9 @@ class IntrospectionController
         /** @var Client $client */
         $client = $request->attributes->get('identity_client');
 
-        $payload = $this->introspector->introspect(
-            $request->validated('token'),
-            $request->validated('token_type_hint'),
-            $client,
-        );
+        // token_type_hint is validated and accepted per RFC 7662 §2.1 but carries
+        // no optimization value here (only access tokens are introspectable).
+        $payload = $this->introspector->introspect($request->validated('token'), $client);
 
         return response()->json($payload)
             ->header('Cache-Control', 'no-store');

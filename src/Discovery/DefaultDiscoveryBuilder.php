@@ -35,6 +35,9 @@ class DefaultDiscoveryBuilder implements DiscoveryDocumentBuilder
             'claims_supported' => $this->scopeRegistrar->allClaims(),
             'code_challenge_methods_supported' => ['S256'],
             'request_parameter_supported' => false,
+            // Defaults to true per Discovery 1.0; advertised explicitly since this OP
+            // does not accept the request_uri parameter.
+            'request_uri_parameter_supported' => false,
             'claims_parameter_supported' => false,
             'frontchannel_logout_supported' => true,
             'frontchannel_logout_session_supported' => true,
