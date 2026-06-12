@@ -4,6 +4,8 @@ namespace Chiiya\LaravelIdentity\Concerns;
 
 use Chiiya\LaravelIdentity\Jwt\Algorithm;
 use Chiiya\LaravelIdentity\Oidc\SubjectType;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Laravel\Passport\Scope;
 
 /**
  * Apply this trait to your Client model (which extends Laravel\Passport\Client)
@@ -93,7 +95,10 @@ trait HasOidcMetadata
         return (bool) $this->first_party;
     }
 
-    public function skipsAuthorization(): bool
+    /**
+     * @param Scope[] $scopes
+     */
+    public function skipsAuthorization(?Authenticatable $user = null, array $scopes = []): bool
     {
         return $this->isFirstParty();
     }

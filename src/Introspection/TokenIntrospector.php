@@ -4,33 +4,35 @@ namespace Chiiya\LaravelIdentity\Introspection;
 
 use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
 use Chiiya\LaravelIdentity\Oidc\UserProvider;
-use Illuminate\Support\Facades\Date;
 use Laravel\Passport\Client;
+use Laravel\Passport\Contracts\OAuthenticatable;
+use Laravel\Passport\Passport;
 use Laravel\Passport\Token;
-use Laravel\Passport\TokenRepository;
+use Lcobucci\JWT\Encoding\JoseEncoder;
+use Lcobucci\JWT\Token\Parser;
+use Lcobucci\JWT\Token\Plain;
+use Lcobucci\JWT\Token\RegisteredClaims;
+use Throwable;
 
-class TokenIntrospector
+readonly class TokenIntrospector
 {
     public function __construct(
-        private readonly TokenRepository $tokenRepository,
-        private readonly UserProvider $userProvider,
-        private readonly SubjectIdentifierResolver $subjectResolver,
+        private UserProvider $userProvider,
+        private SubjectIdentifierResolver $subjectResolver,
     ) {}
 
     /**
      * Introspect a token, returning an RFC 7662 response payload.
      *
+     * @see https://datatracker.ietf.org/doc/html/rfc7662#section-2.2
+     *
      * @return array<string, mixed>
      */
     public function introspect(string $token, ?string $tokenTypeHint, Client $requestingClient): array
     {
-        $record = $this->findToken($token, $tokenTypeHint);
+        $record = $this->findToken($token);
 
-        if ($record === null || $record->revoked) {
-            return ['active' => false];
-        }
-
-        if ($record->expires_at !== null && $record->expires_at->isPast()) {
+        if (! $record instanceof Token) {
             return ['active' => false];
         }
 
@@ -38,14 +40,49 @@ class TokenIntrospector
             return ['active' => false];
         }
 
-        return $this->buildActivePayload($record, $requestingClient);
+        return $this->buildActivePayload($record);
     }
 
-    private function findToken(string $token, ?string $hint): ?Token
+    private function findToken(string $token): ?Token
     {
-        // Attempt to find by the opaque token value stored in oauth_access_tokens.
-        return $this->tokenRepository->find($token)
-            ?? $this->tokenRepository->findForUser($token, null);
+        $id = $this->accessTokenId($token);
+
+        if ($id === null) {
+            return null;
+        }
+
+        /** @var Token|null $record */
+        $record = Passport::tokenModel()::query()->find($id);
+
+        if ($record === null || $record->revoked) {
+            return null;
+        }
+
+        if ($record->expires_at !== null && $record->expires_at->isPast()) {
+            return null;
+        }
+
+        return $record;
+    }
+
+    /**
+     * Extract the access token identifier (`jti`) from a JWT-encoded Passport access token.
+     */
+    private function accessTokenId(string $token): ?string
+    {
+        try {
+            $parsed = new Parser(new JoseEncoder)->parse($token);
+        } catch (Throwable) {
+            return null;
+        }
+
+        if (! $parsed instanceof Plain) {
+            return null;
+        }
+
+        $jti = $parsed->claims()->get(RegisteredClaims::ID);
+
+        return is_string($jti) ? $jti : null;
     }
 
     private function clientMayIntrospect(Token $token, Client $requestingClient): bool
@@ -60,7 +97,7 @@ class TokenIntrospector
     /**
      * @return array<string, mixed>
      */
-    private function buildActivePayload(Token $token, Client $requestingClient): array
+    private function buildActivePayload(Token $token): array
     {
         $issuer = config('identity.issuer') ?: config('app.url');
 
@@ -79,8 +116,9 @@ class TokenIntrospector
         if ($token->user_id !== null) {
             $user = $this->userProvider->findById($token->user_id);
 
-            if ($user !== null) {
-                $client = Client::find($token->client_id);
+            if ($user instanceof OAuthenticatable) {
+                /** @var Client|null $client */
+                $client = Passport::clientModel()::query()->find($token->client_id);
                 $payload['sub'] = $client !== null
                     ? $this->subjectResolver->resolve($user, $client)
                     : (string) $user->getAuthIdentifier();
