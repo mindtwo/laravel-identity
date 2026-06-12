@@ -10,16 +10,27 @@ use Chiiya\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
 use Chiiya\LaravelIdentity\Http\Requests\EndSessionRequest;
 use Chiiya\LaravelIdentity\Identity;
 use Chiiya\LaravelIdentity\Logout\FrontChannelOrchestrator;
+use Chiiya\LaravelIdentity\Logout\LogoutRequest;
 use Chiiya\LaravelIdentity\Logout\RpInitiatedLogoutValidator;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use RuntimeException;
 
+/**
+ * RP-Initiated Logout endpoint.
+ *
+ * GET  /oauth/logout — the browser is redirected here by the RP. For a
+ *      non-first-party client we render the confirmation screen; otherwise the
+ *      logout proceeds immediately.
+ * POST /oauth/logout — the logout is confirmed (the confirmation form was
+ *      submitted, or the RP posted the request directly), so it always proceeds.
+ *
+ * @see https://openid.net/specs/openid-connect-rpinitiated-1_0.html
+ */
 class EndSessionController
 {
     public function __construct(
@@ -32,24 +43,67 @@ class EndSessionController
     ) {}
 
     /**
-     * Show the RP-initiated logout confirmation screen (or proceed silently for first-party).
+     * GET: show the confirmation screen for a non-first-party client, otherwise
+     * proceed to log out.
      */
     public function show(EndSessionRequest $request): RedirectResponse|Response
     {
-        if (! $request->user()) {
-            return $this->logoutWithoutSession($request);
+        $user = $request->user();
+
+        if (! $user instanceof OAuthenticatable) {
+            return $this->redirectWithoutSession($request);
         }
 
-        if ($request->isMethod('post')) {
-            return $this->performLogout($request);
+        if (! $this->hasRpContext($request)) {
+            return $this->endSession($request, $user, client: null, redirectUri: null, state: null);
         }
 
-        if (! $request->filled('id_token_hint') && ! $request->filled('client_id')) {
-            return $this->localLogout($request);
+        $logout = $this->validatedRequest($request);
+        $this->assertSubjectMatchesUser($user, $logout);
+
+        // RP-Initiated Logout §6: confirm with the End-User before logging out,
+        // unless the client is trusted (first-party).
+        if (! Identity::clientIsFirstParty($logout->client)) {
+            return $this->confirmationScreen($logout);
         }
 
+        return $this->endSession($request, $user, $logout->client, $logout->postLogoutRedirectUri, $logout->state);
+    }
+
+    /**
+     * POST: the logout is already confirmed, so always proceed.
+     */
+    public function logout(EndSessionRequest $request): RedirectResponse|Response
+    {
+        $user = $request->user();
+
+        if (! $user instanceof OAuthenticatable) {
+            return $this->redirectWithoutSession($request);
+        }
+
+        if (! $this->hasRpContext($request)) {
+            return $this->endSession($request, $user, client: null, redirectUri: null, state: null);
+        }
+
+        $logout = $this->validatedRequest($request);
+        $this->assertSubjectMatchesUser($user, $logout);
+
+        return $this->endSession($request, $user, $logout->client, $logout->postLogoutRedirectUri, $logout->state);
+    }
+
+    private function hasRpContext(EndSessionRequest $request): bool
+    {
+        return $request->filled('id_token_hint') || $request->filled('client_id');
+    }
+
+    /**
+     * Validate the RP logout request, aborting with 400 when it is malformed or the
+     * post_logout_redirect_uri is not registered for the client.
+     */
+    private function validatedRequest(EndSessionRequest $request): LogoutRequest
+    {
         try {
-            $logoutRequest = $this->validator->validate(
+            return $this->validator->validate(
                 $request->input('id_token_hint'),
                 $request->input('post_logout_redirect_uri'),
                 $request->input('state'),
@@ -58,28 +112,28 @@ class EndSessionController
         } catch (InvalidRpLogoutRequest) {
             abort(400, 'Invalid logout request.');
         }
+    }
 
-        // Validate the id_token_hint subject matches the current user. The sub is
-        // client-specific (e.g. pairwise), so resolve it through the same resolver
-        // used at issuance rather than comparing against the raw user identifier.
-        if (! empty($logoutRequest->subject)) {
-            $expected = $this->subjectResolver->resolve($request->user(), $logoutRequest->client);
-
-            if (! hash_equals($expected, $logoutRequest->subject)) {
-                abort(403, 'The id_token_hint subject does not match the current user.');
-            }
+    /**
+     * The id_token_hint subject is client-specific (e.g. pairwise), so compare it
+     * through the same resolver used at issuance rather than the raw identifier. A
+     * client_id-only request carries no subject and is skipped.
+     */
+    private function assertSubjectMatchesUser(OAuthenticatable $user, LogoutRequest $logout): void
+    {
+        if ($logout->subject === '') {
+            return;
         }
 
-        // First-party clients may skip confirmation.
-        if (Identity::clientIsFirstParty($logoutRequest->client)) {
-            return $this->executeLogout(
-                $request,
-                $logoutRequest->client,
-                $logoutRequest->postLogoutRedirectUri,
-                $logoutRequest->state,
-            );
-        }
+        $expected = $this->subjectResolver->resolve($user, $logout->client);
 
+        if (! hash_equals($expected, $logout->subject)) {
+            abort(403, 'The id_token_hint subject does not match the current user.');
+        }
+    }
+
+    private function confirmationScreen(LogoutRequest $logout): Response
+    {
         $view = Identity::$endSessionView;
 
         if ($view === null) {
@@ -89,53 +143,28 @@ class EndSessionController
         }
 
         return response()->view(is_callable($view) ? $view() : $view, [
-            'client' => $logoutRequest->client,
-            'request' => $logoutRequest,
-            'state' => $logoutRequest->state,
+            'client' => $logout->client,
+            'request' => $logout,
+            'state' => $logout->state,
         ]);
     }
 
-    public function performLogout(EndSessionRequest $request): RedirectResponse|Response
-    {
-        if (! $request->user()) {
-            return $this->logoutWithoutSession($request);
-        }
-
-        if (! $request->filled('id_token_hint') && ! $request->filled('client_id')) {
-            return $this->localLogout($request);
-        }
-
-        try {
-            $logoutRequest = $this->validator->validate(
-                $request->input('id_token_hint'),
-                $request->input('post_logout_redirect_uri'),
-                $request->input('state'),
-                $request->input('client_id'),
-            );
-        } catch (InvalidRpLogoutRequest) {
-            abort(400, 'Invalid logout request.');
-        }
-
-        return $this->executeLogout(
-            $request,
-            $logoutRequest->client,
-            $logoutRequest->postLogoutRedirectUri,
-            $logoutRequest->state,
-        );
-    }
-
-    private function executeLogout(
-        Request $request,
-        Client $client,
+    /**
+     * Terminate the OP session: notify listeners, propagate front-channel logout to
+     * the user's other RPs, tear down the session, then redirect — or render the
+     * front-channel iframe page first when there are RPs to notify.
+     */
+    private function endSession(
+        EndSessionRequest $request,
+        OAuthenticatable $user,
+        ?Client $client,
         ?string $redirectUri,
         ?string $state,
     ): RedirectResponse|Response {
-        /** @var OAuthenticatable $user */
-        $user = $request->user();
-
         $event = new UserLoggedOut($user, $client);
 
-        // Run synchronous listeners first (e.g. token revocation that must complete before redirect).
+        // Synchronous listeners run first (e.g. token revocation that must complete
+        // before the redirect); fire-and-forget work can listen to the dispatched event.
         foreach ($this->container->tagged('identity.logout_listeners') as $listener) {
             // @var LogoutEventListener $listener
             $listener->handle($event);
@@ -143,87 +172,58 @@ class EndSessionController
 
         $this->events->dispatch($event);
 
-        // Build the iframe URLs BEFORE revoking sessions, otherwise the active
-        // sessions (and their sids) are gone when we need them.
-        $iframeUrls = $this->orchestrator->buildIframeUrls($user);
+        // Capture iframe URLs BEFORE revoking sessions, otherwise the sids are gone.
+        // Front-channel propagation applies to RP-initiated logout; a plain local
+        // logout (no client) does not notify other RPs.
+        $iframeUrls = $client instanceof Client ? $this->orchestrator->buildIframeUrls($user) : [];
 
         $this->sidResolver->invalidate($user);
-
-        // Perform Laravel logout.
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        if ($iframeUrls !== []) {
-            $finalRedirect = $this->buildFinalRedirectUrl($redirectUri, $state);
+        $target = $this->finalRedirectUrl($redirectUri, $state) ?? '/';
 
-            $layout = Identity::$frontChannelLogoutLayout;
-
-            $componentData = [
-                'iframeUrls' => $iframeUrls,
-                'redirectUri' => $finalRedirect,
-            ];
-
-            if ($layout !== null) {
-                $layoutView = is_callable($layout) ? $layout() : $layout;
-
-                return response()->view($layoutView, $componentData);
-            }
-
-            return response()->view('identity::front-channel-logout', $componentData);
-        }
-
-        return redirect($this->buildFinalRedirectUrl($redirectUri, $state) ?? '/');
+        return $iframeUrls === []
+            ? redirect($target)
+            : $this->frontChannelPage($iframeUrls, $target);
     }
 
     /**
-     * Handle a logout request that arrives without an active session. With no
-     * user to log out we still honor a validated post_logout_redirect_uri so the
-     * RP completes its logout flow (RP-Initiated Logout §2).
+     * Render the front-channel logout page that loads each RP's logout iframe and
+     * then continues to $redirectUri. Apps may supply their own wrapper view via
+     * Identity::frontChannelLogoutLayout().
+     *
+     * @param list<string> $iframeUrls
      */
-    private function logoutWithoutSession(EndSessionRequest $request): RedirectResponse
+    private function frontChannelPage(array $iframeUrls, string $redirectUri): Response
     {
-        if (! $request->filled('id_token_hint') && ! $request->filled('client_id')) {
+        $data = ['iframeUrls' => $iframeUrls, 'redirectUri' => $redirectUri];
+
+        $layout = Identity::$frontChannelLogoutLayout;
+
+        if ($layout !== null) {
+            return response()->view(is_callable($layout) ? $layout() : $layout, $data);
+        }
+
+        return response()->view('identity::front-channel-logout', $data);
+    }
+
+    /**
+     * No active session: honor a validated post_logout_redirect_uri so the RP can
+     * complete its flow, otherwise land on home.
+     */
+    private function redirectWithoutSession(EndSessionRequest $request): RedirectResponse
+    {
+        if (! $this->hasRpContext($request)) {
             return redirect('/');
         }
 
-        try {
-            $logoutRequest = $this->validator->validate(
-                $request->input('id_token_hint'),
-                $request->input('post_logout_redirect_uri'),
-                $request->input('state'),
-                $request->input('client_id'),
-            );
-        } catch (InvalidRpLogoutRequest) {
-            abort(400, 'Invalid logout request.');
-        }
+        $logout = $this->validatedRequest($request);
 
-        return redirect(
-            $this->buildFinalRedirectUrl($logoutRequest->postLogoutRedirectUri, $logoutRequest->state) ?? '/',
-        );
+        return redirect($this->finalRedirectUrl($logout->postLogoutRedirectUri, $logout->state) ?? '/');
     }
 
-    private function localLogout(Request $request): RedirectResponse
-    {
-        /** @var OAuthenticatable $user */
-        $user = $request->user();
-
-        $event = new UserLoggedOut($user, null);
-
-        foreach ($this->container->tagged('identity.logout_listeners') as $listener) {
-            // @var LogoutEventListener $listener
-            $listener->handle($event);
-        }
-
-        $this->events->dispatch($event);
-        $this->sidResolver->invalidate($user);
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/');
-    }
-
-    private function buildFinalRedirectUrl(?string $uri, ?string $state): ?string
+    private function finalRedirectUrl(?string $uri, ?string $state): ?string
     {
         if ($uri === null) {
             return null;
