@@ -35,7 +35,7 @@ class EndSessionController
     public function show(EndSessionRequest $request): RedirectResponse|Response
     {
         if (! $request->user()) {
-            return redirect('/');
+            return $this->logoutWithoutSession($request);
         }
 
         if ($request->isMethod('post')) {
@@ -97,7 +97,7 @@ class EndSessionController
     public function performLogout(EndSessionRequest $request): RedirectResponse|Response
     {
         if (! $request->user()) {
-            return redirect('/');
+            return $this->logoutWithoutSession($request);
         }
 
         if (! $request->filled('id_token_hint') && ! $request->filled('client_id')) {
@@ -175,6 +175,33 @@ class EndSessionController
         }
 
         return redirect($this->buildFinalRedirectUrl($redirectUri, $state) ?? '/');
+    }
+
+    /**
+     * Handle a logout request that arrives without an active session. With no
+     * user to log out we still honor a validated post_logout_redirect_uri so the
+     * RP completes its logout flow (RP-Initiated Logout §2).
+     */
+    private function logoutWithoutSession(EndSessionRequest $request): RedirectResponse
+    {
+        if (! $request->filled('id_token_hint') && ! $request->filled('client_id')) {
+            return redirect('/');
+        }
+
+        try {
+            $logoutRequest = $this->validator->validate(
+                $request->input('id_token_hint'),
+                $request->input('post_logout_redirect_uri'),
+                $request->input('state'),
+                $request->input('client_id'),
+            );
+        } catch (InvalidRpLogoutRequest) {
+            abort(400, 'Invalid logout request.');
+        }
+
+        return redirect(
+            $this->buildFinalRedirectUrl($logoutRequest->postLogoutRedirectUri, $logoutRequest->state) ?? '/',
+        );
     }
 
     private function localLogout(Request $request): RedirectResponse
