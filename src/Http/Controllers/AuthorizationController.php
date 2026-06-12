@@ -3,58 +3,60 @@
 namespace Chiiya\LaravelIdentity\Http\Controllers;
 
 use Chiiya\LaravelIdentity\Events\AuthorizationRequestValidated;
-use Chiiya\LaravelIdentity\Exceptions\ConsentRequired;
-use Chiiya\LaravelIdentity\Exceptions\LoginRequired;
 use Chiiya\LaravelIdentity\Oidc\AuthRequestContext;
 use Chiiya\LaravelIdentity\Oidc\NonceStore;
-use Chiiya\LaravelIdentity\Oidc\PromptHandler;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Laravel\Passport\Client;
 use Laravel\Passport\ClientRepository;
+use Laravel\Passport\Contracts\AuthorizationViewResponse;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\Http\Controllers\AuthorizationController as PassportAuthorizationController;
-use Laravel\Passport\TokenRepository;
+use League\OAuth2\Server\AuthorizationServer;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 class AuthorizationController extends PassportAuthorizationController
 {
     public function __construct(
+        AuthorizationServer $server,
+        StatefulGuard $guard,
+        ClientRepository $clients,
         private readonly NonceStore $nonceStore,
-        private readonly PromptHandler $promptHandler,
         private readonly Dispatcher $events,
-    ) {}
+    ) {
+        parent::__construct($server, $guard, $clients);
+    }
 
+    /**
+     * Layer OIDC concerns (max_age, nonce, auth_time) on top of Passport's
+     * spec-compliant prompt/consent/login handling, then delegate.
+     */
     public function authorize(
         ServerRequestInterface $psrRequest,
         Request $request,
-        ClientRepository $clients,
-        TokenRepository $tokens,
-    ): mixed {
-        $user = $request->user();
-        $authTime = $this->resolveAuthTime($user);
-        $context = AuthRequestContext::fromRequest($request, $authTime);
+        ResponseInterface $psrResponse,
+        AuthorizationViewResponse $viewResponse,
+    ): AuthorizationViewResponse|Response {
+        $user = $this->guard->user();
 
-        if ($user !== null) {
-            $client = $this->resolveClientFromRequest($request, $clients);
+        if ($user instanceof OAuthenticatable) {
+            $authTime = $this->resolveAuthTime($user);
+            $context = AuthRequestContext::fromRequest($request, $authTime);
+
+            // OIDC max_age: re-authenticate when the existing session is older than
+            // the requested maximum authentication age (Core 1.0 §3.1.2.1).
+            $this->enforceMaxAge($context, $request);
+
+            $client = $this->resolveClientFromRequest($request);
 
             if ($client instanceof Client) {
-                $isFirstParty = method_exists($client, 'isFirstParty') && $client->isFirstParty();
-
-                // Evaluate prompt and max_age constraints.
-                try {
-                    $this->promptHandler->evaluate($context, $user, $client, $isFirstParty);
-                } catch (ConsentRequired $e) {
-                    return $this->buildErrorRedirect($request, 'consent_required', $e->getMessage());
-                } catch (LoginRequired $e) {
-                    return $this->buildErrorRedirect($request, 'login_required', $e->getMessage());
-                }
-
-                // Store nonce for later pickup by IdTokenResponseType.
+                // Persist the nonce so it can be embedded in the issued id_token.
                 if ($context->nonce !== null) {
                     $this->nonceStore->storePreCode(
                         (string) $user->getAuthIdentifier(),
@@ -69,12 +71,36 @@ class AuthorizationController extends PassportAuthorizationController
             }
         }
 
-        return parent::authorize($psrRequest, $request, $clients, $tokens);
+        return parent::authorize($psrRequest, $request, $psrResponse, $viewResponse);
     }
 
-    private function resolveAuthTime(?OAuthenticatable $user): DateTimeImmutable
+    private function enforceMaxAge(AuthRequestContext $context, Request $request): void
     {
-        if ($user instanceof OAuthenticatable && method_exists($user, 'getAuthTime')) {
+        if ($context->maxAge === null) {
+            return;
+        }
+
+        if ($request->session()->get('promptedForLogin', false)) {
+            return;
+        }
+
+        $elapsed = new DateTimeImmutable()->getTimestamp() - $context->authTime->getTimestamp();
+
+        if ($elapsed <= $context->maxAge) {
+            return;
+        }
+
+        // Force a fresh login, mirroring Passport's prompt=login handling.
+        $this->guard->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        $this->promptForLogin($request);
+    }
+
+    private function resolveAuthTime(OAuthenticatable $user): DateTimeImmutable
+    {
+        if (method_exists($user, 'getAuthTime')) {
             $authTime = $user->getAuthTime();
 
             if ($authTime instanceof DateTimeInterface) {
@@ -89,7 +115,7 @@ class AuthorizationController extends PassportAuthorizationController
         return new DateTimeImmutable;
     }
 
-    private function resolveClientFromRequest(Request $request, ClientRepository $clients): ?Client
+    private function resolveClientFromRequest(Request $request): ?Client
     {
         $clientId = $request->input('client_id');
 
@@ -98,23 +124,9 @@ class AuthorizationController extends PassportAuthorizationController
         }
 
         try {
-            return $clients->findActive($clientId);
+            return $this->clients->findActive($clientId);
         } catch (Throwable) {
             return null;
         }
-    }
-
-    private function buildErrorRedirect(Request $request, string $error, string $description): RedirectResponse
-    {
-        $redirectUri = $request->input('redirect_uri', '/');
-        $state = $request->input('state');
-        $separator = str_contains($redirectUri, '?') ? '&' : '?';
-        $query = http_build_query(array_filter([
-            'error' => $error,
-            'error_description' => $description,
-            'state' => $state,
-        ]));
-
-        return redirect($redirectUri.$separator.$query);
     }
 }

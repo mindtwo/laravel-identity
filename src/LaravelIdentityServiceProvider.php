@@ -19,15 +19,18 @@ use Chiiya\LaravelIdentity\Logout\RpInitiatedLogoutValidator;
 use Chiiya\LaravelIdentity\Oidc\ClaimAggregator;
 use Chiiya\LaravelIdentity\Oidc\IdTokenResponseType;
 use Chiiya\LaravelIdentity\Oidc\NonceStore;
-use Chiiya\LaravelIdentity\Oidc\PromptHandler;
 use Chiiya\LaravelIdentity\Oidc\Scopes\StandardClaimProvider;
 use Chiiya\LaravelIdentity\Oidc\Scopes\StandardScopeRegistrar;
 use Chiiya\LaravelIdentity\Oidc\SubjectResolvers\ClientAwareSubjectResolver;
 use Chiiya\LaravelIdentity\Oidc\UserProvider;
 use Chiiya\LaravelIdentity\Session\SidManager;
+use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Cache\Repository as Cache;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Laravel\Passport\Http\Controllers\AuthorizationController as PassportAuthorizationController;
 use Laravel\Passport\Passport;
+use Laravel\Passport\Scope;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -49,6 +52,11 @@ class LaravelIdentityServiceProvider extends PackageServiceProvider
         // Swap Passport's authorization controller with ours.
         $this->app->bind(PassportAuthorizationController::class, AuthorizationController::class);
 
+        // Mirror Passport's contextual StatefulGuard binding for our controller.
+        $this->app->when(AuthorizationController::class)
+            ->needs(StatefulGuard::class)
+            ->give(fn () => Auth::guard(config('passport.guard')));
+
         // Contracts → default implementations.
         $this->app->singleton(KeyResolver::class, PassportKeyResolver::class);
         $this->app->singleton(ScopeRegistrar::class, StandardScopeRegistrar::class);
@@ -62,7 +70,6 @@ class LaravelIdentityServiceProvider extends PackageServiceProvider
         $this->app->singleton(JwksBuilder::class);
         $this->app->singleton(NonceStore::class, fn ($app) => new NonceStore($app->make(Cache::class)));
         $this->app->singleton(ClaimAggregator::class);
-        $this->app->singleton(PromptHandler::class);
         $this->app->singleton(UserProvider::class);
         $this->app->singleton(FrontChannelOrchestrator::class);
         $this->app->singleton(RpInitiatedLogoutValidator::class);
@@ -80,5 +87,30 @@ class LaravelIdentityServiceProvider extends PackageServiceProvider
     {
         // Swap Passport's BearerTokenResponse so token endpoint responses include id_token.
         Passport::$authorizationServerResponseType = $this->app->make(IdTokenResponseType::class);
+
+        if (config('identity.register_openid_scope', true)) {
+            $this->registerOidcScopes();
+        }
+    }
+
+    /**
+     * Register the OIDC scopes with Passport so they may be requested, without
+     * clobbering any scopes the host application has already defined.
+     */
+    private function registerOidcScopes(): void
+    {
+        $registrar = $this->app->make(ScopeRegistrar::class);
+
+        $existing = Passport::scopes()
+            ->mapWithKeys(fn (Scope $scope): array => [$scope->id => $scope->description])
+            ->all();
+
+        $oidc = [];
+
+        foreach ($registrar->all() as $scope) {
+            $oidc[$scope] = $existing[$scope] ?? Str::headline($scope);
+        }
+
+        Passport::tokensCan([...$existing, ...$oidc]);
     }
 }
