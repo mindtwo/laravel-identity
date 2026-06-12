@@ -3,6 +3,7 @@
 namespace Chiiya\LaravelIdentity\Tests;
 
 use Chiiya\LaravelIdentity\LaravelIdentityServiceProvider;
+use Chiiya\LaravelIdentity\Tests\Fixtures\TestUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Laravel\Passport\PassportServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
@@ -14,7 +15,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Chiiya\\LaravelIdentity\\Tests\\Factories\\'.class_basename($modelName).'Factory',
+            fn (string $modelName) => 'Chiiya\LaravelIdentity\Tests\Factories\\'.class_basename($modelName).'Factory',
         );
     }
 
@@ -29,6 +30,7 @@ abstract class TestCase extends BaseTestCase
     protected function defineDatabaseMigrations(): void
     {
         $this->loadLaravelMigrations();
+        $this->loadMigrationsFrom(__DIR__.'/../vendor/laravel/passport/database/migrations');
         $this->artisan('migrate', ['--database' => 'testing'])->run();
     }
 
@@ -46,7 +48,7 @@ abstract class TestCase extends BaseTestCase
         ]);
         $app['config']->set('auth.providers.users', [
             'driver' => 'eloquent',
-            'model' => \Chiiya\LaravelIdentity\Tests\Fixtures\TestUser::class,
+            'model' => TestUser::class,
         ]);
     }
 }

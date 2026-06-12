@@ -6,19 +6,13 @@ use Chiiya\LaravelIdentity\Tests\TestCase;
 
 class JwksEndpointTest extends TestCase
 {
-    protected function defineDatabaseMigrations(): void
-    {
-        parent::defineDatabaseMigrations();
-        $this->artisan('passport:keys', ['--force' => true])->run();
-    }
-
     public function test_returns_keys_array(): void
     {
         $response = $this->getJson('/.well-known/jwks.json');
 
         $response->assertOk();
         $response->assertJsonStructure(['keys' => [['kty', 'use', 'alg', 'kid', 'n', 'e']]]);
-        $response->assertHeader('Cache-Control', 'public, max-age=3600');
+        $response->assertHeader('Cache-Control', 'max-age=3600, public');
     }
 
     public function test_returns_304_when_etag_matches(): void
@@ -40,5 +34,11 @@ class JwksEndpointTest extends TestCase
             $this->assertArrayHasKey('kid', $key);
             $this->assertNotEmpty($key['kid']);
         }
+    }
+
+    protected function defineDatabaseMigrations(): void
+    {
+        parent::defineDatabaseMigrations();
+        $this->artisan('passport:keys', ['--force' => true])->run();
     }
 }

@@ -7,6 +7,10 @@ use Chiiya\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
 use Chiiya\LaravelIdentity\Jwt\JwtValidator;
 use Chiiya\LaravelIdentity\Logout\RpInitiatedLogoutValidator;
 use Chiiya\LaravelIdentity\Tests\TestCase;
+use Laravel\Passport\Client;
+use Lcobucci\JWT\Token\DataSet;
+use Lcobucci\JWT\Token\Plain;
+use Lcobucci\JWT\Token\Signature;
 use Mockery\MockInterface;
 
 class RpInitiatedLogoutValidatorTest extends TestCase
@@ -38,17 +42,17 @@ class RpInitiatedLogoutValidatorTest extends TestCase
 
     public function test_state_is_preserved_in_logout_request(): void
     {
-        $client = \Laravel\Passport\Client::factory()->create();
+        $client = Client::factory()->create();
 
-        $token = $this->mock(\Lcobucci\JWT\Token\Plain::class, function (MockInterface $mock) use ($client): void {
-            $claims = $this->mock(\Lcobucci\JWT\Token\DataSet::class, function (MockInterface $m) use ($client): void {
-                $m->shouldReceive('get')->with('iss')->andReturn(config('app.url'));
-                $m->shouldReceive('get')->with('sub')->andReturn('user-123');
-                $m->shouldReceive('get')->with('aud')->andReturn([(string) $client->getKey()]);
-                $m->shouldReceive('get')->with('exp')->andReturn(null);
-            });
-            $mock->shouldReceive('claims')->andReturn($claims);
-        });
+        $token = new Plain(
+            new DataSet([], ''),
+            new DataSet([
+                'iss' => config('app.url'),
+                'sub' => 'user-123',
+                'aud' => [(string) $client->getKey()],
+            ], ''),
+            new Signature('', ''),
+        );
 
         $jwtValidator = $this->mock(JwtValidator::class, function (MockInterface $mock) use ($token): void {
             $mock->shouldReceive('parseAndVerify')->andReturn($token);
@@ -57,6 +61,6 @@ class RpInitiatedLogoutValidatorTest extends TestCase
         $validator = new RpInitiatedLogoutValidator($jwtValidator);
         $result = $validator->validate('some.valid.token', null, 'my-state', null);
 
-        $this->assertEquals('my-state', $result->state);
+        $this->assertSame('my-state', $result->state);
     }
 }

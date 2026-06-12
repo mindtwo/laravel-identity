@@ -14,22 +14,9 @@ class JwksBuilderTest extends TestCase
     private string $testPrivateKey;
     private string $testPublicKey;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $key = openssl_pkey_new([
-            'private_key_bits' => 2048,
-            'private_key_type' => OPENSSL_KEYTYPE_RSA,
-        ]);
-        openssl_pkey_export($key, $this->testPrivateKey);
-        $details = openssl_pkey_get_details($key);
-        $this->testPublicKey = $details['key'];
-    }
-
     public function test_builds_rsa_jwk_with_required_fields(): void
     {
-        $kid = substr(hash('sha256', $this->testPublicKey), 0, 16);
+        $kid = mb_substr(hash('sha256', $this->testPublicKey), 0, 16);
         $material = new KeyMaterial($this->testPrivateKey, $this->testPublicKey, $kid, Algorithm::RS256);
 
         $resolver = $this->mock(KeyResolver::class, function (MockInterface $mock) use ($material): void {
@@ -43,10 +30,10 @@ class JwksBuilderTest extends TestCase
         $this->assertCount(1, $result['keys']);
 
         $jwk = $result['keys'][0];
-        $this->assertEquals('RSA', $jwk['kty']);
-        $this->assertEquals('sig', $jwk['use']);
-        $this->assertEquals('RS256', $jwk['alg']);
-        $this->assertEquals($kid, $jwk['kid']);
+        $this->assertSame('RSA', $jwk['kty']);
+        $this->assertSame('sig', $jwk['use']);
+        $this->assertSame('RS256', $jwk['alg']);
+        $this->assertSame($kid, $jwk['kid']);
         $this->assertArrayHasKey('n', $jwk);
         $this->assertArrayHasKey('e', $jwk);
     }
@@ -63,7 +50,7 @@ class JwksBuilderTest extends TestCase
 
         $builder = new JwksBuilder($resolver);
 
-        $this->assertEquals($builder->etag(), $builder->etag());
+        $this->assertSame($builder->etag(), $builder->etag());
     }
 
     public function test_multiple_keys_included_in_jwks(): void
@@ -81,7 +68,21 @@ class JwksBuilderTest extends TestCase
         $result = $builder->build();
 
         $this->assertCount(2, $result['keys']);
-        $this->assertEquals($kid1, $result['keys'][0]['kid']);
-        $this->assertEquals($kid2, $result['keys'][1]['kid']);
+        $this->assertSame($kid1, $result['keys'][0]['kid']);
+        $this->assertSame($kid2, $result['keys'][1]['kid']);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $key = openssl_pkey_new([
+            'private_key_bits' => 2048,
+            'private_key_type' => OPENSSL_KEYTYPE_RSA,
+        ]);
+        openssl_pkey_export($key, $privateKey);
+        $details = openssl_pkey_get_details($key);
+        $this->testPrivateKey = $privateKey;
+        $this->testPublicKey = $details['key'];
     }
 }
