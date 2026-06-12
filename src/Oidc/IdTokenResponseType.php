@@ -2,6 +2,7 @@
 
 namespace Chiiya\LaravelIdentity\Oidc;
 
+use Chiiya\LaravelIdentity\Contracts\SessionIdResolver;
 use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
 use Chiiya\LaravelIdentity\Events\IdTokenIssued;
 use Chiiya\LaravelIdentity\Identity;
@@ -21,6 +22,7 @@ class IdTokenResponseType extends BearerTokenResponse
         private readonly SubjectIdentifierResolver $subjectResolver,
         private readonly NonceStore $nonceStore,
         private readonly UserProvider $userProvider,
+        private readonly SessionIdResolver $sidResolver,
         private readonly Dispatcher $events,
     ) {}
 
@@ -57,9 +59,21 @@ class IdTokenResponseType extends BearerTokenResponse
 
         $authCodeId = $this->nonceStore->currentAuthCodeId();
         $nonceData = $authCodeId !== null ? $this->nonceStore->pull($authCodeId) : null;
-        $nonce = $nonceData['nonce'] ?? null;
-        $sid = $nonceData['sid'] ?? null;
-        $authTimestamp = $nonceData['auth_time'] ?? time();
+
+        if ($nonceData !== null) {
+            // Authorization code grant: nonce, sid and auth_time were bound to the code.
+            $nonce = $nonceData['nonce'] ?? null;
+            $sid = $nonceData['sid'] ?? null;
+            $authTimestamp = $nonceData['auth_time'] ?? time();
+        } else {
+            // Refresh token grant: no code/web session — replay the original
+            // auth_time and sid from the active OIDC session (Core 1.0 §12.2).
+            $recovered = $this->sidResolver->recover($user, $client);
+            $nonce = null;
+            $sid = $recovered['sid'] ?? null;
+            $authTimestamp = $recovered['auth_time'] ?? time();
+        }
+
         $authTime = new DateTimeImmutable()->setTimestamp($authTimestamp);
 
         $now = new DateTimeImmutable;

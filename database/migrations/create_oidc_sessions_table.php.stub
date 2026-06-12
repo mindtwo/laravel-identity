@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('user_id')->index();
             $table->uuid('client_id')->index();
             $table->string('laravel_session_id', 40)->index();
+            // Original authentication time, replayed into the auth_time claim of
+            // id_tokens reissued on refresh (Core 1.0 §12.2).
+            $table->timestamp('auth_time')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('last_seen_at')->useCurrent();
             $table->timestamp('revoked_at')->nullable()->index();

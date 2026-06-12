@@ -62,7 +62,7 @@ class AuthorizationController extends PassportAuthorizationController
                 $request->session()->put('identity.oidc_auth', [
                     'nonce' => $context->nonce,
                     'auth_time' => $authTime->getTimestamp(),
-                    'sid' => $this->sidResolver->forCurrentRequest($user, $client),
+                    'sid' => $this->sidResolver->forCurrentRequest($user, $client, $authTime),
                 ]);
 
                 $this->events->dispatch(new AuthorizationRequestValidated($user, $client, $context));
