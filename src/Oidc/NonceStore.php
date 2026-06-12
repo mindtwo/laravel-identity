@@ -24,13 +24,18 @@ class NonceStore
     ) {}
 
     /**
-     * Associate the nonce and auth_time with a freshly persisted auth code.
+     * Associate the nonce, auth_time and session id with a freshly persisted auth code.
      */
-    public function bindToAuthCode(string $authCodeId, ?string $nonce, DateTimeImmutable $authTime): void
-    {
+    public function bindToAuthCode(
+        string $authCodeId,
+        ?string $nonce,
+        DateTimeImmutable $authTime,
+        ?string $sid = null,
+    ): void {
         $this->cache->put(self::PREFIX.$authCodeId, [
             'nonce' => $nonce,
             'auth_time' => $authTime->getTimestamp(),
+            'sid' => $sid,
         ], self::TTL);
     }
 
@@ -50,7 +55,7 @@ class NonceStore
     /**
      * Retrieve (and remove) the nonce data bound to the given auth code.
      *
-     * @return array{nonce: ?string, auth_time: int}|null
+     * @return array{nonce: ?string, auth_time: int, sid: ?string}|null
      */
     public function pull(string $authCodeId): ?array
     {

@@ -31,6 +31,7 @@ class AuthCodeRepository extends PassportAuthCodeRepository
                 $authCodeEntity->getIdentifier(),
                 $data['nonce'] ?? null,
                 new DateTimeImmutable()->setTimestamp((int) ($data['auth_time'] ?? time())),
+                $data['sid'] ?? null,
             );
         }
     }

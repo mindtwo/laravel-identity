@@ -2,18 +2,15 @@
 
 namespace Chiiya\LaravelIdentity\Http\Controllers;
 
-use Chiiya\LaravelIdentity\Contracts\SessionIdResolver;
 use Chiiya\LaravelIdentity\Identity;
 use Chiiya\LaravelIdentity\Logout\FrontChannelOrchestrator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Laravel\Passport\Client;
 
 class FrontChannelLogoutController
 {
     public function __construct(
         private readonly FrontChannelOrchestrator $orchestrator,
-        private readonly SessionIdResolver $sidResolver,
     ) {}
 
     public function show(Request $request): Response
@@ -22,14 +19,7 @@ class FrontChannelLogoutController
             abort(401);
         }
 
-        $user = $request->user();
-        $fcClients = $this->orchestrator->relevantClients($user);
-
-        $iframeUrls = $fcClients->map(function (Client $client) use ($user): string {
-            $sid = $this->sidResolver->find($user, $client);
-
-            return $this->orchestrator->buildIframeUrl($client, $sid);
-        })->values()->all();
+        $iframeUrls = $this->orchestrator->buildIframeUrls($request->user());
 
         $redirectUri = $request->input('redirect', '/');
 

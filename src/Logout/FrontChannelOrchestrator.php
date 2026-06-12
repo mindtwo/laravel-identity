@@ -11,27 +11,43 @@ use Laravel\Passport\Passport;
 class FrontChannelOrchestrator
 {
     /**
-     * Return clients that have an active front-channel logout URI for the given user.
+     * Build a front-channel logout iframe URL for every active OIDC session the
+     * user holds with a client that registered a front-channel logout URI.
      *
-     * @return Collection<int, Client>
+     * Each iframe carries the session's own identifier as the `sid`, which is the
+     * same value embedded in that session's id_token — guaranteeing correlation.
+     *
+     * @return list<string>
      */
-    public function relevantClients(OAuthenticatable $user): Collection
+    public function buildIframeUrls(OAuthenticatable $user): array
     {
-        $clientIds = OidcSession::where('user_id', $user->getAuthIdentifier())
+        $sessions = OidcSession::query()
+            ->where('user_id', $user->getAuthIdentifier())
             ->whereNull('revoked_at')
-            ->pluck('client_id')
-            ->unique()
-            ->values();
+            ->get();
 
-        if ($clientIds->isEmpty()) {
-            return new Collection;
+        if ($sessions->isEmpty()) {
+            return [];
         }
 
-        // @var Collection<int, Client>
-        return Passport::clientModel()::query()
-            ->whereIn('id', $clientIds)
+        /** @var Collection<string, Client> $clients */
+        $clients = Passport::clientModel()::query()
+            ->whereIn('id', $sessions->pluck('client_id')->unique()->values())
             ->whereNotNull('frontchannel_logout_uri')
-            ->get();
+            ->get()
+            ->keyBy(fn (Client $client): string => (string) $client->getKey());
+
+        $urls = [];
+
+        foreach ($sessions as $session) {
+            $client = $clients->get((string) $session->client_id);
+
+            if ($client instanceof Client) {
+                $urls[] = $this->buildIframeUrl($client, $session->id);
+            }
+        }
+
+        return array_values(array_unique($urls));
     }
 
     /**

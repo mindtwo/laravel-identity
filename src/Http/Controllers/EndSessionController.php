@@ -146,17 +146,9 @@ class EndSessionController
 
         $this->events->dispatch($event);
 
-        // Collect front-channel clients and their sids BEFORE revoking sessions,
-        // otherwise the active sessions (and sids) are gone when we build iframes.
-        $iframeUrls = $this->orchestrator->relevantClients($user)
-            ->map(
-                fn (Client $fc): string => $this->orchestrator->buildIframeUrl($fc, $this->sidResolver->find(
-                    $user,
-                    $fc,
-                )),
-            )
-            ->values()
-            ->all();
+        // Build the iframe URLs BEFORE revoking sessions, otherwise the active
+        // sessions (and their sids) are gone when we need them.
+        $iframeUrls = $this->orchestrator->buildIframeUrls($user);
 
         $this->sidResolver->invalidate($user);
 
