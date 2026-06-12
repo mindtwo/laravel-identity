@@ -21,7 +21,7 @@ class FrontChannelLogoutController
 
         $iframeUrls = $this->orchestrator->buildIframeUrls($request->user());
 
-        $redirectUri = $request->input('redirect', '/');
+        $redirectUri = $this->safeRedirect($request->input('redirect'));
 
         $layout = Identity::$frontChannelLogoutLayout;
 
@@ -37,5 +37,25 @@ class FrontChannelLogoutController
         }
 
         return response()->view('identity::front-channel-logout', $data);
+    }
+
+    /**
+     * Constrain the post-logout landing target to a local, relative path. An
+     * attacker-supplied absolute or protocol-relative URL would otherwise turn
+     * this endpoint into an open redirect.
+     */
+    private function safeRedirect(mixed $redirect): string
+    {
+        if (! is_string($redirect) || $redirect === '') {
+            return '/';
+        }
+
+        if (! str_starts_with($redirect, '/')
+            || str_starts_with($redirect, '//')
+            || str_starts_with($redirect, '/\\')) {
+            return '/';
+        }
+
+        return $redirect;
     }
 }
