@@ -32,6 +32,13 @@ abstract class TestCase extends BaseTestCase
         $this->loadLaravelMigrations();
         $this->loadMigrationsFrom(__DIR__.'/../vendor/laravel/passport/database/migrations');
         $this->artisan('migrate', ['--database' => 'testing'])->run();
+
+        // The package ships its migrations as `.php.stub` files intended for
+        // publishing (they alter Passport's tables). Laravel's migrator skips
+        // `.stub` files, so apply them directly here once the base tables exist.
+        foreach (glob(__DIR__.'/../database/migrations/*.php.stub') ?: [] as $stub) {
+            (require $stub)->up();
+        }
     }
 
     protected function getEnvironmentSetUp($app): void
