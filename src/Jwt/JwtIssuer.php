@@ -28,7 +28,7 @@ class JwtIssuer
         $signer = $this->signerFor($material->algorithm);
         $signingKey = InMemory::plainText($material->privateKey);
 
-        $builder = new Builder(new JoseEncoder, ChainedFormatter::default())
+        $builder = Builder::new(new JoseEncoder, ChainedFormatter::default())
             ->withHeader('kid', $material->kid)
             ->issuedBy($this->issuer())
             ->permittedFor((string) $context->client->getKey())
