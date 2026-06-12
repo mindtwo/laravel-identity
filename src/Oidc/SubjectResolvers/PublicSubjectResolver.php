@@ -8,6 +8,9 @@ use Laravel\Passport\Contracts\OAuthenticatable;
 
 class PublicSubjectResolver implements SubjectIdentifierResolver
 {
+    /**
+     * {@inheritDoc}
+     */
     public function resolve(OAuthenticatable $user, Client $client): string
     {
         return (string) $user->getAuthIdentifier();

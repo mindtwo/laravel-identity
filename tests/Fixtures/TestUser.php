@@ -8,22 +8,18 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 
-class TestUser extends Authenticatable implements OAuthenticatable, ClaimProvider
+class TestUser extends Authenticatable implements ClaimProvider, OAuthenticatable
 {
     use HasApiTokens;
-
     protected $table = 'users';
-
     protected $fillable = ['name', 'email', 'password'];
-
     protected $hidden = ['password', 'remember_token'];
 
-    /** @var DateTimeImmutable */
     protected DateTimeImmutable $authTime;
 
     public function getAuthTime(): DateTimeImmutable
     {
-        return $this->authTime ?? new DateTimeImmutable();
+        return $this->authTime ?? new DateTimeImmutable;
     }
 
     public function setAuthTime(DateTimeImmutable $time): void

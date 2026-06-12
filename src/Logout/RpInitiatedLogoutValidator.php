@@ -47,7 +47,7 @@ class RpInitiatedLogoutValidator
         try {
             $token = $this->jwtValidator->parseAndVerify($idTokenHint);
         } catch (InvalidIdTokenHint $e) {
-            throw new InvalidRpLogoutRequest('Invalid id_token_hint: '.$e->getMessage(), previous: $e);
+            throw new InvalidRpLogoutRequest('Invalid id_token_hint: '.$e->getMessage(), $e->getCode(), previous: $e);
         }
 
         $issuer = config('identity.issuer') ?: config('app.url');
@@ -131,12 +131,10 @@ class RpInitiatedLogoutValidator
             return null;
         }
 
-        if (method_exists($client, 'matchesPostLogoutRedirectUri')) {
-            if (! $client->matchesPostLogoutRedirectUri($requested)) {
-                throw new InvalidRpLogoutRequest(
-                    'post_logout_redirect_uri is not registered for this client.',
-                );
-            }
+        if (method_exists($client, 'matchesPostLogoutRedirectUri') && ! $client->matchesPostLogoutRedirectUri(
+            $requested,
+        )) {
+            throw new InvalidRpLogoutRequest('post_logout_redirect_uri is not registered for this client.');
         }
 
         return $requested;

@@ -10,23 +10,17 @@ class Identity
     /**
      * The view to render for RP-initiated logout confirmation.
      * Set via Identity::endSessionView('view.name') in AppServiceProvider::boot().
-     *
-     * @var string|Closure|null
      */
-    public static string|Closure|null $endSessionView = null;
+    public static Closure|string|null $endSessionView = null;
 
     /**
      * Optional layout view that wraps the front-channel logout Blade component.
      * When null, the component is rendered as a bare document.
-     *
-     * @var string|Closure|null
      */
-    public static string|Closure|null $frontChannelLogoutLayout = null;
+    public static Closure|string|null $frontChannelLogoutLayout = null;
 
     /**
      * Custom callback to determine whether a client should skip the consent screen.
-     *
-     * @var Closure|null
      */
     public static ?Closure $firstPartyClientResolver = null;
 
@@ -38,18 +32,18 @@ class Identity
 
     /**
      * Register the view name for the RP-initiated logout confirmation screen.
-     * Receives: ['client' => Client, 'request' => LogoutRequest, 'state' => ?string]
+     * Receives: ['client' => Client, 'request' => LogoutRequest, 'state' => ?string].
      */
-    public static function endSessionView(string|Closure $view): void
+    public static function endSessionView(Closure|string $view): void
     {
         static::$endSessionView = $view;
     }
 
     /**
      * Register an optional layout view that wraps the front-channel logout Blade component.
-     * Receives: ['iframeUrls' => array, 'redirectUri' => ?string]
+     * Receives: ['iframeUrls' => array, 'redirectUri' => ?string].
      */
-    public static function frontChannelLogoutLayout(string|Closure $view): void
+    public static function frontChannelLogoutLayout(Closure|string $view): void
     {
         static::$frontChannelLogoutLayout = $view;
     }

@@ -17,7 +17,8 @@ class ClaimAggregator
     /**
      * Collect and filter claims from all registered ClaimProviders.
      *
-     * @param  list<string>  $scopes
+     * @param list<string> $scopes
+     *
      * @return array<string, mixed>
      */
     public function aggregate(OAuthenticatable $user, array $scopes): array

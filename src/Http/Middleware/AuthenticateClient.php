@@ -18,9 +18,12 @@ class AuthenticateClient
     {
         $client = $this->resolveClient($request);
 
-        if ($client === null) {
+        if (! $client instanceof Client) {
             return response()->json(
-                ['error' => 'invalid_client', 'error_description' => 'Client authentication failed.'],
+                [
+                    'error' => 'invalid_client',
+                    'error_description' => 'Client authentication failed.',
+                ],
                 401,
                 ['WWW-Authenticate' => 'Basic realm="identity"'],
             );
@@ -38,7 +41,7 @@ class AuthenticateClient
             $header = $request->header('Authorization', '');
 
             if (str_starts_with($header, 'Basic ')) {
-                $decoded = base64_decode(substr($header, 6));
+                $decoded = base64_decode(mb_substr($header, 6), true);
                 [$clientId, $clientSecret] = explode(':', $decoded, 2) + [1 => ''];
 
                 return $this->validateClient($clientId, $clientSecret);
@@ -47,10 +50,7 @@ class AuthenticateClient
 
         // client_secret_post
         if ($request->filled('client_id') && $request->filled('client_secret')) {
-            return $this->validateClient(
-                $request->input('client_id'),
-                $request->input('client_secret'),
-            );
+            return $this->validateClient($request->input('client_id'), $request->input('client_secret'));
         }
 
         return null;

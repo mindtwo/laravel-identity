@@ -6,6 +6,7 @@ use Chiiya\LaravelIdentity\Contracts\KeyResolver;
 use Chiiya\LaravelIdentity\Jwt\Algorithm;
 use Chiiya\LaravelIdentity\Jwt\KeyMaterial;
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Multi-key resolver for key rotation scenarios.
@@ -25,7 +26,7 @@ class ConfigKeyResolver implements KeyResolver
     private array $keys = [];
 
     public function __construct(
-        /** @var list<array{private: string, public: string, algorithm?: string}> */
+        // @var list<array{private: string, public: string, algorithm?: string}>
         array $keys,
     ) {
         foreach ($keys as $i => $entry) {
@@ -34,7 +35,7 @@ class ConfigKeyResolver implements KeyResolver
             }
 
             $alg = Algorithm::from($entry['algorithm'] ?? Algorithm::RS256->value);
-            $kid = substr(hash('sha256', $entry['public']), 0, 16);
+            $kid = mb_substr(hash('sha256', $entry['public']), 0, 16);
             $this->keys[] = new KeyMaterial(
                 privateKey: $entry['private'],
                 publicKey: $entry['public'],
@@ -47,10 +48,10 @@ class ConfigKeyResolver implements KeyResolver
     public function current(?Algorithm $preferred = null): KeyMaterial
     {
         if (empty($this->keys)) {
-            throw new \RuntimeException('No identity keys configured.');
+            throw new RuntimeException('No identity keys configured.');
         }
 
-        if ($preferred !== null) {
+        if ($preferred instanceof Algorithm) {
             foreach ($this->keys as $key) {
                 if ($key->algorithm === $preferred) {
                     return $key;
@@ -79,8 +80,6 @@ class ConfigKeyResolver implements KeyResolver
 
     public function supportedAlgs(): array
     {
-        return array_values(array_unique(
-            array_map(fn (KeyMaterial $k) => $k->algorithm->value, $this->keys),
-        ));
+        return array_values(array_unique(array_map(fn (KeyMaterial $k) => $k->algorithm->value, $this->keys)));
     }
 }

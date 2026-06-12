@@ -10,8 +10,8 @@ use Laravel\Passport\Contracts\OAuthenticatable;
 readonly class IdTokenContext
 {
     /**
-     * @param  array<string, mixed>  $claims
-     * @param  list<string>  $scopes
+     * @param array<string, mixed> $claims
+     * @param list<string> $scopes
      */
     public function __construct(
         public OAuthenticatable $user,

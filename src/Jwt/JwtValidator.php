@@ -20,6 +20,7 @@ use Lcobucci\JWT\Token\Parser;
 use Lcobucci\JWT\Token\Plain;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Lcobucci\JWT\Validation\Validator;
+use Throwable;
 
 class JwtValidator
 {
@@ -35,9 +36,13 @@ class JwtValidator
     public function parseAndVerify(string $token): Plain
     {
         try {
-            $parsed = (new Parser(new JoseEncoder()))->parse($token);
-        } catch (\Throwable $e) {
-            throw new InvalidIdTokenHint('Failed to parse id_token_hint: '.$e->getMessage(), previous: $e);
+            $parsed = new Parser(new JoseEncoder)->parse($token);
+        } catch (Throwable $e) {
+            throw new InvalidIdTokenHint(
+                'Failed to parse id_token_hint: '.$e->getMessage(),
+                $e->getCode(),
+                previous: $e,
+            );
         }
 
         if (! $parsed instanceof Plain) {
@@ -49,7 +54,7 @@ class JwtValidator
         if ($kid !== null) {
             $material = $this->keyResolver->byKid((string) $kid);
 
-            if ($material === null) {
+            if (! $material instanceof KeyMaterial) {
                 throw new InvalidIdTokenHint("Unknown key ID: {$kid}");
             }
 
@@ -83,18 +88,18 @@ class JwtValidator
     private function verifySignature(Plain $token, KeyMaterial $material): void
     {
         $signer = match ($material->algorithm) {
-            Algorithm::RS256 => new RsaSha256(),
-            Algorithm::RS384 => new RsaSha384(),
-            Algorithm::RS512 => new RsaSha512(),
-            Algorithm::PS256 => new PssSha256(),
-            Algorithm::PS384 => new PssSha384(),
-            Algorithm::PS512 => new PssSha512(),
+            Algorithm::RS256 => new RsaSha256,
+            Algorithm::RS384 => new RsaSha384,
+            Algorithm::RS512 => new RsaSha512,
+            Algorithm::PS256 => new PssSha256,
+            Algorithm::PS384 => new PssSha384,
+            Algorithm::PS512 => new PssSha512,
             Algorithm::ES256 => EcSha256::create(),
             Algorithm::ES384 => EcSha384::create(),
             Algorithm::ES512 => EcSha512::create(),
         };
 
-        $validator = new Validator();
+        $validator = new Validator;
         $key = InMemory::plainText($material->publicKey);
 
         if (! $validator->validate($token, new SignedWith($signer, $key))) {

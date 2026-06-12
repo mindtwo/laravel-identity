@@ -16,7 +16,7 @@ class UserProvider
             throw new RuntimeException('Cannot resolve user model. Ensure Passport is configured.');
         }
 
-        /** @var OAuthenticatable|null */
+        // @var OAuthenticatable|null
         return $model::find($identifier);
     }
 }

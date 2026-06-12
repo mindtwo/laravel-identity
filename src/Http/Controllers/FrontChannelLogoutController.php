@@ -2,11 +2,12 @@
 
 namespace Chiiya\LaravelIdentity\Http\Controllers;
 
-use Chiiya\LaravelIdentity\Logout\FrontChannelOrchestrator;
 use Chiiya\LaravelIdentity\Contracts\SessionIdResolver;
+use Chiiya\LaravelIdentity\Identity;
+use Chiiya\LaravelIdentity\Logout\FrontChannelOrchestrator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use RuntimeException;
+use Laravel\Passport\Client;
 
 class FrontChannelLogoutController
 {
@@ -24,7 +25,7 @@ class FrontChannelLogoutController
         $user = $request->user();
         $fcClients = $this->orchestrator->relevantClients($user);
 
-        $iframeUrls = $fcClients->map(function (\Laravel\Passport\Client $client) use ($user): string {
+        $iframeUrls = $fcClients->map(function (Client $client) use ($user): string {
             $sid = $this->sidResolver->find($user, $client);
 
             return $this->orchestrator->buildIframeUrl($client, $sid);
@@ -32,7 +33,7 @@ class FrontChannelLogoutController
 
         $redirectUri = $request->input('redirect', '/');
 
-        $layout = \Chiiya\LaravelIdentity\Identity::$frontChannelLogoutLayout;
+        $layout = Identity::$frontChannelLogoutLayout;
 
         $data = [
             'iframeUrls' => $iframeUrls,

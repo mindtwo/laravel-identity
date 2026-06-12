@@ -31,7 +31,7 @@ class JwtIssuer
         $signer = $this->signerFor($material->algorithm);
         $signingKey = InMemory::plainText($material->privateKey);
 
-        $builder = (new Builder(new JoseEncoder(), ChainedFormatter::default()))
+        $builder = new Builder(new JoseEncoder, ChainedFormatter::default())
             ->withHeader('kid', $material->kid)
             ->issuedBy($this->issuer())
             ->permittedFor((string) $context->client->getKey())
@@ -63,12 +63,12 @@ class JwtIssuer
     private function signerFor(Algorithm $algorithm): Signer
     {
         return match ($algorithm) {
-            Algorithm::RS256 => new RsaSha256(),
-            Algorithm::RS384 => new RsaSha384(),
-            Algorithm::RS512 => new RsaSha512(),
-            Algorithm::PS256 => new PssSha256(),
-            Algorithm::PS384 => new PssSha384(),
-            Algorithm::PS512 => new PssSha512(),
+            Algorithm::RS256 => new RsaSha256,
+            Algorithm::RS384 => new RsaSha384,
+            Algorithm::RS512 => new RsaSha512,
+            Algorithm::PS256 => new PssSha256,
+            Algorithm::PS384 => new PssSha384,
+            Algorithm::PS512 => new PssSha512,
             Algorithm::ES256 => EcSha256::create(),
             Algorithm::ES384 => EcSha384::create(),
             Algorithm::ES512 => EcSha512::create(),

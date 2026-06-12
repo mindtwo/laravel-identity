@@ -6,12 +6,6 @@ use Chiiya\LaravelIdentity\Tests\TestCase;
 
 class DiscoveryEndpointTest extends TestCase
 {
-    protected function defineDatabaseMigrations(): void
-    {
-        parent::defineDatabaseMigrations();
-        $this->artisan('passport:keys', ['--force' => true])->run();
-    }
-
     public function test_returns_required_openid_connect_fields(): void
     {
         $response = $this->getJson('/.well-known/openid-configuration');
@@ -48,5 +42,11 @@ class DiscoveryEndpointTest extends TestCase
         $response = $this->getJson('/.well-known/openid-configuration');
 
         $response->assertJsonPath('frontchannel_logout_supported', true);
+    }
+
+    protected function defineDatabaseMigrations(): void
+    {
+        parent::defineDatabaseMigrations();
+        $this->artisan('passport:keys', ['--force' => true])->run();
     }
 }

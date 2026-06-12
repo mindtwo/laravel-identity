@@ -6,24 +6,19 @@ use Chiiya\LaravelIdentity\Oidc\SubjectResolvers\PairwiseSubjectResolver;
 use Chiiya\LaravelIdentity\Tests\Fixtures\TestUser;
 use Chiiya\LaravelIdentity\Tests\TestCase;
 use Laravel\Passport\Client;
+use RuntimeException;
 
 class PairwiseSubjectResolverTest extends TestCase
 {
-    protected function getEnvironmentSetUp($app): void
-    {
-        parent::getEnvironmentSetUp($app);
-        $app['config']->set('identity.pairwise_salt', 'test-salt-123');
-    }
-
     public function test_subject_is_deterministic_for_same_inputs(): void
     {
         $user = new TestUser(['id' => 42]);
-        $client = new Client();
+        $client = new Client;
         $client->redirect_uris = ['https://app.example.com/callback'];
 
-        $resolver = new PairwiseSubjectResolver();
+        $resolver = new PairwiseSubjectResolver;
 
-        $this->assertEquals(
+        $this->assertSame(
             $resolver->resolve($user, $client),
             $resolver->resolve($user, $client),
         );
@@ -33,15 +28,15 @@ class PairwiseSubjectResolverTest extends TestCase
     {
         $user = new TestUser(['id' => 42]);
 
-        $client1 = new Client();
+        $client1 = new Client;
         $client1->redirect_uris = ['https://app1.example.com/callback'];
 
-        $client2 = new Client();
+        $client2 = new Client;
         $client2->redirect_uris = ['https://app2.example.com/callback'];
 
-        $resolver = new PairwiseSubjectResolver();
+        $resolver = new PairwiseSubjectResolver;
 
-        $this->assertNotEquals(
+        $this->assertNotSame(
             $resolver->resolve($user, $client1),
             $resolver->resolve($user, $client2),
         );
@@ -51,15 +46,15 @@ class PairwiseSubjectResolverTest extends TestCase
     {
         $user = new TestUser(['id' => 42]);
 
-        $client1 = new Client();
+        $client1 = new Client;
         $client1->redirect_uris = ['https://same.example.com/cb1'];
 
-        $client2 = new Client();
+        $client2 = new Client;
         $client2->redirect_uris = ['https://same.example.com/cb2'];
 
-        $resolver = new PairwiseSubjectResolver();
+        $resolver = new PairwiseSubjectResolver;
 
-        $this->assertEquals(
+        $this->assertSame(
             $resolver->resolve($user, $client1),
             $resolver->resolve($user, $client2),
         );
@@ -70,12 +65,18 @@ class PairwiseSubjectResolverTest extends TestCase
         config(['identity.pairwise_salt' => null]);
 
         $user = new TestUser(['id' => 1]);
-        $client = new Client();
+        $client = new Client;
         $client->redirect_uris = ['https://example.com/cb'];
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('pairwise_salt');
 
-        (new PairwiseSubjectResolver())->resolve($user, $client);
+        new PairwiseSubjectResolver()->resolve($user, $client);
+    }
+
+    protected function getEnvironmentSetUp($app): void
+    {
+        parent::getEnvironmentSetUp($app);
+        $app['config']->set('identity.pairwise_salt', 'test-salt-123');
     }
 }

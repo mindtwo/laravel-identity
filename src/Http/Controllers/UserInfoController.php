@@ -7,6 +7,7 @@ use Chiiya\LaravelIdentity\Oidc\ClaimAggregator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Laravel\Passport\Client;
+use Laravel\Passport\Contracts\OAuthenticatable;
 
 class UserInfoController
 {
@@ -17,7 +18,7 @@ class UserInfoController
 
     public function show(Request $request): JsonResponse
     {
-        /** @var \Laravel\Passport\Contracts\OAuthenticatable $user */
+        /** @var OAuthenticatable $user */
         $user = $request->user();
         $token = $request->user()->token();
         $scopes = $token?->scopes ?? [];

@@ -9,9 +9,11 @@ use Chiiya\LaravelIdentity\Jwt\Algorithm;
 use Chiiya\LaravelIdentity\Jwt\JwtIssuer;
 use DateTimeImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
-use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use Laravel\Passport\Client;
+use Laravel\Passport\Contracts\OAuthenticatable;
+use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\ResponseTypes\BearerTokenResponse;
+use Throwable;
 
 class IdTokenResponseType extends BearerTokenResponse
 {
@@ -30,10 +32,7 @@ class IdTokenResponseType extends BearerTokenResponse
      */
     protected function getExtraParams(AccessTokenEntityInterface $accessToken): array
     {
-        $scopes = array_map(
-            fn ($scope) => $scope->getIdentifier(),
-            $accessToken->getScopes(),
-        );
+        $scopes = array_map(fn ($scope) => $scope->getIdentifier(), $accessToken->getScopes());
 
         if (! in_array('openid', $scopes, strict: true)) {
             return [];
@@ -45,7 +44,7 @@ class IdTokenResponseType extends BearerTokenResponse
             return [];
         }
 
-        /** @var \Laravel\Passport\Contracts\OAuthenticatable|null $user */
+        /** @var OAuthenticatable|null $user */
         $user = $this->userProvider->findById($userIdentifier);
 
         if ($user === null) {
@@ -53,7 +52,7 @@ class IdTokenResponseType extends BearerTokenResponse
         }
 
         $clientId = $accessToken->getClient()->getIdentifier();
-        $client = \Laravel\Passport\Client::find($clientId);
+        $client = Client::find($clientId);
 
         if ($client === null) {
             return [];
@@ -62,9 +61,9 @@ class IdTokenResponseType extends BearerTokenResponse
         $nonceData = $this->nonceStore->retrieve($accessToken->getIdentifier());
         $nonce = $nonceData['nonce'] ?? null;
         $authTimestamp = $nonceData['auth_time'] ?? time();
-        $authTime = (new DateTimeImmutable())->setTimestamp($authTimestamp);
+        $authTime = new DateTimeImmutable()->setTimestamp($authTimestamp);
 
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable;
         $lifetime = method_exists($client, 'getIdTokenLifetimeInSeconds')
             ? $client->getIdTokenLifetimeInSeconds()
             : (int) config('identity.id_token_lifetime', 3600);
@@ -80,7 +79,7 @@ class IdTokenResponseType extends BearerTokenResponse
 
         try {
             $sid = $this->sidResolver->forCurrentRequest($user, $client);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // sid is not critical for the token — continue without it if the request
             // context does not have a session (e.g. direct /oauth/token calls).
         }

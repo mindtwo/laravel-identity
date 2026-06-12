@@ -49,7 +49,7 @@ class PassportKeyResolver implements KeyResolver
             throw new RuntimeException('Failed to read Passport key files.');
         }
 
-        $kid = substr(hash('sha256', $publicKey), 0, 16);
+        $kid = mb_substr(hash('sha256', $publicKey), 0, 16);
 
         return new KeyMaterial(
             privateKey: $privateKey,

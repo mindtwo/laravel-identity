@@ -3,6 +3,7 @@
 namespace Chiiya\LaravelIdentity\Oidc;
 
 use Chiiya\LaravelIdentity\Exceptions\ConsentRequired;
+use Chiiya\LaravelIdentity\Exceptions\LoginRequired;
 use DateTimeImmutable;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
@@ -16,7 +17,7 @@ class PromptHandler
      * Throws ConsentRequired or redirects for re-authentication as appropriate.
      *
      * @throws ConsentRequired
-     * @throws \Chiiya\LaravelIdentity\Exceptions\LoginRequired
+     * @throws LoginRequired
      */
     public function evaluate(
         AuthRequestContext $context,
@@ -26,12 +27,10 @@ class PromptHandler
     ): void {
         // max_age=0 means the user must have just authenticated (fresh login required).
         if ($context->maxAge !== null) {
-            $elapsedSinceAuth = (new DateTimeImmutable())->getTimestamp() - $context->authTime->getTimestamp();
+            $elapsedSinceAuth = new DateTimeImmutable()->getTimestamp() - $context->authTime->getTimestamp();
 
             if ($elapsedSinceAuth > $context->maxAge) {
-                throw new \Chiiya\LaravelIdentity\Exceptions\LoginRequired(
-                    'Authentication time exceeds max_age.',
-                );
+                throw new LoginRequired('Authentication time exceeds max_age.');
             }
         }
 
@@ -49,9 +48,7 @@ class PromptHandler
 
         if ($prompt === 'login') {
             // Force re-authentication regardless of active session.
-            throw new \Chiiya\LaravelIdentity\Exceptions\LoginRequired(
-                'prompt=login requires re-authentication.',
-            );
+            throw new LoginRequired('prompt=login requires re-authentication.');
         }
 
         if ($prompt === 'consent') {

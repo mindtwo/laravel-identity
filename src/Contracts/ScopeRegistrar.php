@@ -7,7 +7,8 @@ interface ScopeRegistrar
     /**
      * Return all claim names grantable by the given scopes.
      *
-     * @param  list<string>  $scopes
+     * @param list<string> $scopes
+     *
      * @return list<string>
      */
     public function claimsFor(array $scopes): array;
@@ -15,7 +16,7 @@ interface ScopeRegistrar
     /**
      * Map additional claim names to a scope.
      *
-     * @param  list<string>  $claims
+     * @param list<string> $claims
      */
     public function register(string $scope, array $claims): void;
 

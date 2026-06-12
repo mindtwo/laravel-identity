@@ -4,7 +4,6 @@ namespace Chiiya\LaravelIdentity;
 
 use Chiiya\LaravelIdentity\Contracts\DiscoveryDocumentBuilder;
 use Chiiya\LaravelIdentity\Contracts\KeyResolver;
-use Chiiya\LaravelIdentity\Contracts\LogoutEventListener;
 use Chiiya\LaravelIdentity\Contracts\ScopeRegistrar;
 use Chiiya\LaravelIdentity\Contracts\SessionIdResolver;
 use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
@@ -48,10 +47,7 @@ class LaravelIdentityServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         // Swap Passport's authorization controller with ours.
-        $this->app->bind(
-            PassportAuthorizationController::class,
-            AuthorizationController::class,
-        );
+        $this->app->bind(PassportAuthorizationController::class, AuthorizationController::class);
 
         // Contracts → default implementations.
         $this->app->singleton(KeyResolver::class, PassportKeyResolver::class);

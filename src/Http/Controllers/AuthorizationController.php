@@ -9,10 +9,17 @@ use Chiiya\LaravelIdentity\Oidc\AuthRequestContext;
 use Chiiya\LaravelIdentity\Oidc\NonceStore;
 use Chiiya\LaravelIdentity\Oidc\PromptHandler;
 use DateTimeImmutable;
+use DateTimeInterface;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Laravel\Passport\Client;
+use Laravel\Passport\ClientRepository;
+use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\Http\Controllers\AuthorizationController as PassportAuthorizationController;
+use Laravel\Passport\TokenRepository;
 use Psr\Http\Message\ServerRequestInterface;
+use Throwable;
 
 class AuthorizationController extends PassportAuthorizationController
 {
@@ -25,8 +32,8 @@ class AuthorizationController extends PassportAuthorizationController
     public function authorize(
         ServerRequestInterface $psrRequest,
         Request $request,
-        \Laravel\Passport\ClientRepository $clients,
-        \Laravel\Passport\TokenRepository $tokens,
+        ClientRepository $clients,
+        TokenRepository $tokens,
     ): mixed {
         $user = $request->user();
         $authTime = $this->resolveAuthTime($user);
@@ -35,7 +42,7 @@ class AuthorizationController extends PassportAuthorizationController
         if ($user !== null) {
             $client = $this->resolveClientFromRequest($request, $clients);
 
-            if ($client !== null) {
+            if ($client instanceof Client) {
                 $isFirstParty = method_exists($client, 'isFirstParty') && $client->isFirstParty();
 
                 // Evaluate prompt and max_age constraints.
@@ -65,27 +72,25 @@ class AuthorizationController extends PassportAuthorizationController
         return parent::authorize($psrRequest, $request, $clients, $tokens);
     }
 
-    private function resolveAuthTime(\Laravel\Passport\Contracts\OAuthenticatable|null $user): DateTimeImmutable
+    private function resolveAuthTime(?OAuthenticatable $user): DateTimeImmutable
     {
-        if ($user !== null && method_exists($user, 'getAuthTime')) {
+        if ($user instanceof OAuthenticatable && method_exists($user, 'getAuthTime')) {
             $authTime = $user->getAuthTime();
 
-            if ($authTime instanceof \DateTimeInterface) {
+            if ($authTime instanceof DateTimeInterface) {
                 return DateTimeImmutable::createFromInterface($authTime);
             }
 
             if (is_int($authTime)) {
-                return (new DateTimeImmutable())->setTimestamp($authTime);
+                return new DateTimeImmutable()->setTimestamp($authTime);
             }
         }
 
-        return new DateTimeImmutable();
+        return new DateTimeImmutable;
     }
 
-    private function resolveClientFromRequest(
-        Request $request,
-        \Laravel\Passport\ClientRepository $clients,
-    ): ?\Laravel\Passport\Client {
+    private function resolveClientFromRequest(Request $request, ClientRepository $clients): ?Client
+    {
         $clientId = $request->input('client_id');
 
         if (empty($clientId)) {
@@ -94,12 +99,12 @@ class AuthorizationController extends PassportAuthorizationController
 
         try {
             return $clients->findActive($clientId);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
     }
 
-    private function buildErrorRedirect(Request $request, string $error, string $description): \Illuminate\Http\RedirectResponse
+    private function buildErrorRedirect(Request $request, string $error, string $description): RedirectResponse
     {
         $redirectUri = $request->input('redirect_uri', '/');
         $state = $request->input('state');

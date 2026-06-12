@@ -6,7 +6,7 @@ class JwkEncoder
 {
     public static function base64url(string $data): string
     {
-        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+        return mb_rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
     public static function encodeBignum(string $value): string

@@ -3,6 +3,7 @@
 namespace Chiiya\LaravelIdentity\Oidc;
 
 use DateTimeImmutable;
+use Illuminate\Http\Request;
 
 readonly class AuthRequestContext
 {
@@ -17,7 +18,7 @@ readonly class AuthRequestContext
         public DateTimeImmutable $authTime,
     ) {}
 
-    public static function fromRequest(\Illuminate\Http\Request $request, DateTimeImmutable $authTime): self
+    public static function fromRequest(Request $request, DateTimeImmutable $authTime): self
     {
         return new self(
             nonce: $request->input('nonce'),

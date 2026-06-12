@@ -9,22 +9,28 @@ use RuntimeException;
 
 class PairwiseSubjectResolver implements SubjectIdentifierResolver
 {
+    /**
+     * {@inheritDoc}
+     */
     public function resolve(OAuthenticatable $user, Client $client): string
     {
         $salt = config('identity.pairwise_salt');
 
         if (empty($salt)) {
-            throw new RuntimeException(
-                'identity.pairwise_salt must be set to use pairwise subject identifiers.',
-            );
+            throw new RuntimeException('identity.pairwise_salt must be set to use pairwise subject identifiers.');
         }
 
         $sectorIdentifier = $this->sectorIdentifierFor($client);
         $raw = $sectorIdentifier.'|'.$user->getAuthIdentifier().'|'.$salt;
 
-        return rtrim(strtr(base64_encode(hash('sha256', $raw, binary: true)), '+/', '-_'), '=');
+        return mb_rtrim(strtr(base64_encode(hash('sha256', $raw, binary: true)), '+/', '-_'), '=');
     }
 
+    /**
+     * Get the client sector identifier to for unique `sub` calculation.
+     *
+     * @see https://openid.net/specs/openid-connect-core-1_0.html#PairwiseAlg
+     */
     private function sectorIdentifierFor(Client $client): string
     {
         // When the trait is applied, prefer the registered sector_identifier_uri.

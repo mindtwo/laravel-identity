@@ -7,6 +7,7 @@ use Chiiya\LaravelIdentity\Contracts\SessionIdResolver;
 use Chiiya\LaravelIdentity\Events\UserLoggedOut;
 use Chiiya\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
 use Chiiya\LaravelIdentity\Http\Requests\EndSessionRequest;
+use Chiiya\LaravelIdentity\Identity;
 use Chiiya\LaravelIdentity\Logout\FrontChannelOrchestrator;
 use Chiiya\LaravelIdentity\Logout\RpInitiatedLogoutValidator;
 use Illuminate\Contracts\Container\Container;
@@ -14,6 +15,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use RuntimeException;
 
@@ -30,7 +32,7 @@ class EndSessionController
     /**
      * Show the RP-initiated logout confirmation screen (or proceed silently for first-party).
      */
-    public function show(EndSessionRequest $request): Response|RedirectResponse
+    public function show(EndSessionRequest $request): RedirectResponse|Response
     {
         if (! $request->user()) {
             return redirect('/');
@@ -69,10 +71,15 @@ class EndSessionController
             && $logoutRequest->client->isFirstParty();
 
         if ($isFirstParty) {
-            return $this->executeLogout($request, $logoutRequest->client, $logoutRequest->postLogoutRedirectUri, $logoutRequest->state);
+            return $this->executeLogout(
+                $request,
+                $logoutRequest->client,
+                $logoutRequest->postLogoutRedirectUri,
+                $logoutRequest->state,
+            );
         }
 
-        $view = \Chiiya\LaravelIdentity\Identity::$endSessionView;
+        $view = Identity::$endSessionView;
 
         if ($view === null) {
             throw new RuntimeException(
@@ -87,7 +94,7 @@ class EndSessionController
         ]);
     }
 
-    public function performLogout(EndSessionRequest $request): Response|RedirectResponse
+    public function performLogout(EndSessionRequest $request): RedirectResponse|Response
     {
         if (! $request->user()) {
             return redirect('/');
@@ -118,10 +125,10 @@ class EndSessionController
 
     private function executeLogout(
         Request $request,
-        \Laravel\Passport\Client $client,
+        Client $client,
         ?string $redirectUri,
         ?string $state,
-    ): Response|RedirectResponse {
+    ): RedirectResponse|Response {
         /** @var OAuthenticatable $user */
         $user = $request->user();
 
@@ -129,7 +136,7 @@ class EndSessionController
 
         // Run synchronous listeners first (e.g. token revocation that must complete before redirect).
         foreach ($this->container->tagged('identity.logout_listeners') as $listener) {
-            /** @var LogoutEventListener $listener */
+            // @var LogoutEventListener $listener
             $listener->handle($event);
         }
 
@@ -143,7 +150,7 @@ class EndSessionController
         $request->session()->regenerateToken();
 
         if ($fcClients->isNotEmpty()) {
-            $iframeUrls = $fcClients->map(function (\Laravel\Passport\Client $fc) use ($user): string {
+            $iframeUrls = $fcClients->map(function (Client $fc) use ($user): string {
                 $sid = $this->sidResolver->find($user, $fc);
 
                 return $this->orchestrator->buildIframeUrl($fc, $sid);
@@ -151,7 +158,7 @@ class EndSessionController
 
             $finalRedirect = $this->buildFinalRedirectUrl($redirectUri, $state);
 
-            $layout = \Chiiya\LaravelIdentity\Identity::$frontChannelLogoutLayout;
+            $layout = Identity::$frontChannelLogoutLayout;
 
             $componentData = [
                 'iframeUrls' => $iframeUrls,
@@ -178,7 +185,7 @@ class EndSessionController
         $event = new UserLoggedOut($user, null);
 
         foreach ($this->container->tagged('identity.logout_listeners') as $listener) {
-            /** @var LogoutEventListener $listener */
+            // @var LogoutEventListener $listener
             $listener->handle($event);
         }
 

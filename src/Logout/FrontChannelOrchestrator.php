@@ -23,10 +23,10 @@ class FrontChannelOrchestrator
             ->values();
 
         if ($clientIds->isEmpty()) {
-            return new Collection();
+            return new Collection;
         }
 
-        /** @var Collection<int, Client> */
+        // @var Collection<int, Client>
         return Client::whereIn('id', $clientIds)
             ->whereNotNull('frontchannel_logout_uri')
             ->get();
@@ -50,6 +50,9 @@ class FrontChannelOrchestrator
         $issuer = config('identity.issuer') ?: config('app.url');
         $separator = str_contains($uri, '?') ? '&' : '?';
 
-        return $uri.$separator.http_build_query(['iss' => $issuer, 'sid' => $sid]);
+        return $uri.$separator.http_build_query([
+            'iss' => $issuer,
+            'sid' => $sid,
+        ]);
     }
 }

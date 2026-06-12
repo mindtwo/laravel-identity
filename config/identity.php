@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | OpenID Connect Issuer
@@ -70,5 +69,4 @@ return [
     |
     */
     'register_openid_scope' => true,
-
 ];

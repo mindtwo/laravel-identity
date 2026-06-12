@@ -8,7 +8,6 @@ use Illuminate\Contracts\Cache\Repository as Cache;
 class NonceStore
 {
     private const PREFIX = 'identity:nonce:';
-
     private const PRE_CODE_PREFIX = 'identity:nonce_pre:';
 
     /** Default TTL: 10 minutes (auth code lifetime) */
@@ -21,14 +20,22 @@ class NonceStore
     /**
      * Store nonce + auth_time keyed on a pre-code identifier (state+client+user).
      */
-    public function storePreCode(string $userId, string $clientId, string $state, ?string $nonce, DateTimeImmutable $authTime): void
-    {
+    public function storePreCode(
+        string $userId,
+        string $clientId,
+        string $state,
+        ?string $nonce,
+        DateTimeImmutable $authTime,
+    ): void {
         if ($nonce === null) {
             return;
         }
 
         $key = self::PRE_CODE_PREFIX.hash('sha256', "{$userId}|{$clientId}|{$state}");
-        $this->cache->put($key, ['nonce' => $nonce, 'auth_time' => $authTime->getTimestamp()], self::TTL);
+        $this->cache->put($key, [
+            'nonce' => $nonce,
+            'auth_time' => $authTime->getTimestamp(),
+        ], self::TTL);
     }
 
     /**
