@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Http\Controllers;
+namespace Mindtwo\LaravelIdentity\Http\Controllers;
 
-use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
-use Chiiya\LaravelIdentity\Oidc\ClaimAggregator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\Passport;
+use Mindtwo\LaravelIdentity\Contracts\SubjectIdentifierResolver;
+use Mindtwo\LaravelIdentity\Oidc\ClaimAggregator;
 
 class UserInfoController
 {

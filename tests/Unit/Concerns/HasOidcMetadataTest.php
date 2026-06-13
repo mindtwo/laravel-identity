@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Unit\Concerns;
+namespace Mindtwo\LaravelIdentity\Tests\Unit\Concerns;
 
-use Chiiya\LaravelIdentity\Jwt\Algorithm;
-use Chiiya\LaravelIdentity\Oidc\SubjectType;
-use Chiiya\LaravelIdentity\Tests\Fixtures\TestClient;
-use Chiiya\LaravelIdentity\Tests\TestCase;
+use Mindtwo\LaravelIdentity\Jwt\Algorithm;
+use Mindtwo\LaravelIdentity\Oidc\SubjectType;
+use Mindtwo\LaravelIdentity\Tests\Fixtures\TestClient;
+use Mindtwo\LaravelIdentity\Tests\TestCase;
 
 class HasOidcMetadataTest extends TestCase
 {

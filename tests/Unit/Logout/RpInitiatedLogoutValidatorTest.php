@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Unit\Logout;
+namespace Mindtwo\LaravelIdentity\Tests\Unit\Logout;
 
-use Chiiya\LaravelIdentity\Exceptions\InvalidIdTokenHint;
-use Chiiya\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
-use Chiiya\LaravelIdentity\Jwt\JwtValidator;
-use Chiiya\LaravelIdentity\Logout\RpInitiatedLogoutValidator;
-use Chiiya\LaravelIdentity\Tests\TestCase;
 use Laravel\Passport\Client;
 use Lcobucci\JWT\Token\DataSet;
 use Lcobucci\JWT\Token\Plain;
 use Lcobucci\JWT\Token\Signature;
+use Mindtwo\LaravelIdentity\Exceptions\InvalidIdTokenHint;
+use Mindtwo\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
+use Mindtwo\LaravelIdentity\Jwt\JwtValidator;
+use Mindtwo\LaravelIdentity\Logout\RpInitiatedLogoutValidator;
+use Mindtwo\LaravelIdentity\Tests\TestCase;
 use Mockery\MockInterface;
 
 class RpInitiatedLogoutValidatorTest extends TestCase

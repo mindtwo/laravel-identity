@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Session;
+namespace Mindtwo\LaravelIdentity\Session;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;

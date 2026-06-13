@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Unit\Jwks;
+namespace Mindtwo\LaravelIdentity\Tests\Unit\Jwks;
 
-use Chiiya\LaravelIdentity\Contracts\KeyResolver;
-use Chiiya\LaravelIdentity\Jwks\JwksBuilder;
-use Chiiya\LaravelIdentity\Jwt\Algorithm;
-use Chiiya\LaravelIdentity\Jwt\KeyMaterial;
-use Chiiya\LaravelIdentity\Tests\TestCase;
+use Mindtwo\LaravelIdentity\Contracts\KeyResolver;
+use Mindtwo\LaravelIdentity\Jwks\JwksBuilder;
+use Mindtwo\LaravelIdentity\Jwt\Algorithm;
+use Mindtwo\LaravelIdentity\Jwt\KeyMaterial;
+use Mindtwo\LaravelIdentity\Tests\TestCase;
 use Mockery\MockInterface;
 
 class JwksBuilderTest extends TestCase

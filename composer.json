@@ -1,12 +1,12 @@
 {
-    "name": "chiiya/laravel-identity",
+    "name": "mindtwo/laravel-identity",
     "description": "OpenID Connect identity layer for Laravel Passport",
     "keywords": ["laravel", "passport", "oauth2", "openid", "oidc"],
     "license": "MIT",
     "authors": [
         {
-            "name": "Ell Cooke",
-            "email": "chiiya@posteo.de"
+            "name": "Elisha Witte",
+            "email": "github@chiiya.moe"
         }
     ],
     "require": {
@@ -28,26 +28,23 @@
         "orchestra/testbench": "^11.0",
         "phpunit/phpunit": "^13.0"
     },
-    "suggest": {
-        "chiiya/laravel-utilities": "Enables AbstractRepository and Pipe-based extension hooks"
-    },
     "autoload": {
         "psr-4": {
-            "Chiiya\\LaravelIdentity\\": "src/"
+            "Mindtwo\\LaravelIdentity\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Chiiya\\LaravelIdentity\\Tests\\": "tests/"
+            "Mindtwo\\LaravelIdentity\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Chiiya\\LaravelIdentity\\LaravelIdentityServiceProvider"
+                "Mindtwo\\LaravelIdentity\\LaravelIdentityServiceProvider"
             ],
             "aliases": {
-                "Identity": "Chiiya\\LaravelIdentity\\Identity"
+                "Identity": "Mindtwo\\LaravelIdentity\\Identity"
             }
         }
     },

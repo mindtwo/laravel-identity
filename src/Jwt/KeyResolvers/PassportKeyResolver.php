@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Jwt\KeyResolvers;
+namespace Mindtwo\LaravelIdentity\Jwt\KeyResolvers;
 
-use Chiiya\LaravelIdentity\Contracts\KeyResolver;
-use Chiiya\LaravelIdentity\Exceptions\UnsupportedSigningAlgorithm;
-use Chiiya\LaravelIdentity\Jwt\Algorithm;
-use Chiiya\LaravelIdentity\Jwt\KeyMaterial;
+use Mindtwo\LaravelIdentity\Contracts\KeyResolver;
+use Mindtwo\LaravelIdentity\Exceptions\UnsupportedSigningAlgorithm;
+use Mindtwo\LaravelIdentity\Jwt\Algorithm;
+use Mindtwo\LaravelIdentity\Jwt\KeyMaterial;
 use RuntimeException;
 
 class PassportKeyResolver implements KeyResolver

@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity;
+namespace Mindtwo\LaravelIdentity;
 
-use Chiiya\LaravelIdentity\Jwt\Algorithm;
 use Closure;
 use Laravel\Passport\Client;
+use Mindtwo\LaravelIdentity\Jwt\Algorithm;
 
 class Identity
 {

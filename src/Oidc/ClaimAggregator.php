@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Oidc;
+namespace Mindtwo\LaravelIdentity\Oidc;
 
-use Chiiya\LaravelIdentity\Contracts\ClaimProvider;
-use Chiiya\LaravelIdentity\Contracts\ScopeRegistrar;
 use Illuminate\Contracts\Container\Container;
 use Laravel\Passport\Contracts\OAuthenticatable;
+use Mindtwo\LaravelIdentity\Contracts\ClaimProvider;
+use Mindtwo\LaravelIdentity\Contracts\ScopeRegistrar;
 
 class ClaimAggregator
 {

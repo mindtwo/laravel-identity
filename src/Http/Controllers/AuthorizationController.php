@@ -1,10 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Http\Controllers;
+namespace Mindtwo\LaravelIdentity\Http\Controllers;
 
-use Chiiya\LaravelIdentity\Contracts\SessionIdResolver;
-use Chiiya\LaravelIdentity\Events\AuthorizationRequestValidated;
-use Chiiya\LaravelIdentity\Oidc\AuthRequestContext;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Contracts\Auth\StatefulGuard;
@@ -16,6 +13,9 @@ use Laravel\Passport\Contracts\AuthorizationViewResponse;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\Http\Controllers\AuthorizationController as PassportAuthorizationController;
 use League\OAuth2\Server\AuthorizationServer;
+use Mindtwo\LaravelIdentity\Contracts\SessionIdResolver;
+use Mindtwo\LaravelIdentity\Events\AuthorizationRequestValidated;
+use Mindtwo\LaravelIdentity\Oidc\AuthRequestContext;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\HttpFoundation\Response;

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Contracts;
+namespace Mindtwo\LaravelIdentity\Contracts;
 
-use Chiiya\LaravelIdentity\Events\UserLoggedOut;
+use Mindtwo\LaravelIdentity\Events\UserLoggedOut;
 
 /**
  * Synchronous pre-redirect logout hook.

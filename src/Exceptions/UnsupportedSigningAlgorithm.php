@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Exceptions;
+namespace Mindtwo\LaravelIdentity\Exceptions;
 
 use RuntimeException;
 

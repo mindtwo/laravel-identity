@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Bridge;
+namespace Mindtwo\LaravelIdentity\Bridge;
 
-use Chiiya\LaravelIdentity\Oidc\NonceStore;
 use DateTimeImmutable;
 use Laravel\Passport\Bridge\AuthCodeRepository as PassportAuthCodeRepository;
 use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
+use Mindtwo\LaravelIdentity\Oidc\NonceStore;
 
 /**
  * Extends Passport's auth code repository to carry the OIDC nonce and auth_time

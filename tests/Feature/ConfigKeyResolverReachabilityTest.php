@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Feature;
+namespace Mindtwo\LaravelIdentity\Tests\Feature;
 
-use Chiiya\LaravelIdentity\Contracts\KeyResolver;
-use Chiiya\LaravelIdentity\Jwt\KeyResolvers\ConfigKeyResolver;
-use Chiiya\LaravelIdentity\Tests\TestCase;
+use Mindtwo\LaravelIdentity\Contracts\KeyResolver;
+use Mindtwo\LaravelIdentity\Jwt\KeyResolvers\ConfigKeyResolver;
+use Mindtwo\LaravelIdentity\Tests\TestCase;
 
 class ConfigKeyResolverReachabilityTest extends TestCase
 {

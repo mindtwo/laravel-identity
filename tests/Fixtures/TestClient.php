@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Fixtures;
+namespace Mindtwo\LaravelIdentity\Tests\Fixtures;
 
-use Chiiya\LaravelIdentity\Concerns\HasOidcMetadata;
 use Laravel\Passport\Client;
+use Mindtwo\LaravelIdentity\Concerns\HasOidcMetadata;
 
 class TestClient extends Client
 {

@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Logout;
+namespace Mindtwo\LaravelIdentity\Logout;
 
-use Chiiya\LaravelIdentity\Identity;
-use Chiiya\LaravelIdentity\Session\OidcSession;
 use Illuminate\Database\Eloquent\Collection;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\Passport;
+use Mindtwo\LaravelIdentity\Identity;
+use Mindtwo\LaravelIdentity\Session\OidcSession;
 
 class FrontChannelOrchestrator
 {

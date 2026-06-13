@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Events;
+namespace Mindtwo\LaravelIdentity\Events;
 
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;

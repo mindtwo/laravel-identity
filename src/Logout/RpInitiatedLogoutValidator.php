@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Logout;
+namespace Mindtwo\LaravelIdentity\Logout;
 
-use Chiiya\LaravelIdentity\Exceptions\InvalidIdTokenHint;
-use Chiiya\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
-use Chiiya\LaravelIdentity\Identity;
-use Chiiya\LaravelIdentity\Jwt\JwtValidator;
 use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
+use Mindtwo\LaravelIdentity\Exceptions\InvalidIdTokenHint;
+use Mindtwo\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
+use Mindtwo\LaravelIdentity\Identity;
+use Mindtwo\LaravelIdentity\Jwt\JwtValidator;
 
 class RpInitiatedLogoutValidator
 {

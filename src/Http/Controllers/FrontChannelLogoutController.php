@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Http\Controllers;
+namespace Mindtwo\LaravelIdentity\Http\Controllers;
 
-use Chiiya\LaravelIdentity\Identity;
-use Chiiya\LaravelIdentity\Logout\FrontChannelOrchestrator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Mindtwo\LaravelIdentity\Identity;
+use Mindtwo\LaravelIdentity\Logout\FrontChannelOrchestrator;
 
 class FrontChannelLogoutController
 {

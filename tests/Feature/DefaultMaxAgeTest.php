@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Feature;
+namespace Mindtwo\LaravelIdentity\Tests\Feature;
 
-use Chiiya\LaravelIdentity\Tests\Fixtures\TestClient;
-use Chiiya\LaravelIdentity\Tests\Fixtures\TestUser;
-use Chiiya\LaravelIdentity\Tests\TestCase;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Route;
 use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
+use Mindtwo\LaravelIdentity\Tests\Fixtures\TestClient;
+use Mindtwo\LaravelIdentity\Tests\Fixtures\TestUser;
+use Mindtwo\LaravelIdentity\Tests\TestCase;
 
 class DefaultMaxAgeTest extends TestCase
 {

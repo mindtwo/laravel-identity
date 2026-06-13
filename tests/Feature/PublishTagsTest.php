@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Feature;
+namespace Mindtwo\LaravelIdentity\Tests\Feature;
 
-use Chiiya\LaravelIdentity\Tests\TestCase;
 use Illuminate\Support\ServiceProvider;
+use Mindtwo\LaravelIdentity\Tests\TestCase;
 
 class PublishTagsTest extends TestCase
 {

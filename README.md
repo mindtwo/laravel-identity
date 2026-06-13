@@ -1,6 +1,49 @@
-# Laravel Identity
+[![mindtwo GmbH](https://www.mindtwo.de/downloads/doodles/github/repository-header.png)](https://www.mindtwo.de/)
 
-An OpenID Connect (OIDC) identity layer for [Laravel Passport](https://laravel.com/docs/passport). It turns a Passport OAuth2 server into a spec-compliant OpenID Provider (OP) by adding ID tokens, a UserInfo endpoint, discovery, JWKS, token introspection, and both front-channel and RP-initiated logout — without forking Passport.
+<div align="center">
+  <p align="center">
+    <img src="https://img.shields.io/github/check-runs/mindtwo/laravel-identity/master">
+    <img src="https://img.shields.io/badge/php-%3E%3D%208.4-8892BF.svg">
+    <img src="https://img.shields.io/badge/laravel-13%20%7C%2012%20%7C%2013-FF2D20.svg">
+  </p>
+
+  <strong>
+    <h2 align="center">Laravel Identity</h2>
+  </strong>
+
+  <p align="center">
+    The missing OIDC identity layer for Laravel Passport
+  </p>
+</div>
+<br />
+
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Endpoints](#endpoints)
+- [Logout](#logout)
+    - [RP-Initiated Logout](#rp-initiated-logout)
+    - [Front-Channel Logout](#front-channel-logout)
+- [Configuration](#configuration)
+- [Subject Types](#subject-types)
+- [Signing Keys and Rotation](#signing-keys-and-rotation)
+- [First-Party Clients](#first-party-clients)
+- [Events](#events)
+- [Extension Points](#extension-points)
+- [Token Introspection](#token-introspection)
+- [Testing](#testing)
+- [License](#license)
+
+
+
+## Features
+
+Laravel Identity is an OpenID Connect (OIDC) identity layer for [Laravel Passport](https://laravel.com/docs/passport). It turns a Passport OAuth2 server into a 
+spec-compliant OpenID Provider (OP) by adding ID tokens, a UserInfo endpoint, discovery, JWKS, token introspection, 
+and both front-channel and RP-initiated logout.
 
 Implemented specifications:
 
@@ -18,18 +61,19 @@ Implemented specifications:
 ## Installation
 
 ```bash
-composer require chiiya/laravel-identity
+composer require mindtwo/laravel-identity
 ```
 
-Run Passport's installer first (if you have not already), then publish this package's migrations and run them. The migrations alter Passport's `oauth_clients` table, so they are published (not auto-run) to let your app own them and order them after `passport:install`:
+Run Passport's installer first (if you have not already), then publish this package's migrations and run 
+them. The migrations alter Passport's `oauth_clients` table.
 
 ```bash
-php artisan passport:install                                  # oauth_* tables + signing keys
-php artisan vendor:publish --tag=identity-migrations           # OIDC client columns + oidc_sessions
+php artisan passport:install
+php artisan vendor:publish --tag=identity-migrations
 php artisan migrate
 ```
 
-The package auto-registers its service provider, routes and views. Publish the config if you need to change defaults:
+Publish the config if you need to change defaults:
 
 ```bash
 php artisan vendor:publish --tag=identity-config
@@ -42,7 +86,7 @@ php artisan vendor:publish --tag=identity-config
 Extend Passport's client and apply the `HasOidcMetadata` trait, then register it with Passport:
 
 ```php
-use Chiiya\LaravelIdentity\Concerns\HasOidcMetadata;
+use Mindtwo\LaravelIdentity\Concerns\HasOidcMetadata;
 use Laravel\Passport\Client as PassportClient;
 
 class Client extends PassportClient
@@ -74,10 +118,11 @@ The trait reads OIDC settings from these (nullable) columns, added by the migrat
 
 ### 2. Expose claims from your User model
 
-Your authenticatable must implement Passport's `OAuthenticatable`. To emit standard OIDC claims, register one or more `ClaimProvider`s and tag them `identity.claims`:
+Your authenticatable must implement Passport's `OAuthenticatable`. To emit standard OIDC claims, 
+register one or more `ClaimProvider`s and tag them `identity.claims`:
 
 ```php
-use Chiiya\LaravelIdentity\Contracts\ClaimProvider;
+use Mindtwo\LaravelIdentity\Contracts\ClaimProvider;
 use Laravel\Passport\Contracts\OAuthenticatable;
 
 class UserClaimProvider implements ClaimProvider
@@ -104,7 +149,8 @@ class UserClaimProvider implements ClaimProvider
 $this->app->tag(UserClaimProvider::class, 'identity.claims');
 ```
 
-Claims are filtered against the granted scopes (`profile`, `email`, `address`, `phone`, …) before they reach the ID token and UserInfo response, so a provider can safely return everything it knows.
+Claims are filtered against the granted scopes (`profile`, `email`, `address`, `phone`, …) before they reach 
+the ID token and UserInfo response, so a provider can safely return everything it knows.
 
 ### 3. Provide `auth_time` (optional, recommended)
 
@@ -138,7 +184,9 @@ The ID token is added to the standard Passport token response (`/oauth/token`) w
 
 ### RP-Initiated Logout
 
-Send the user to `identity.end_session` with an `id_token_hint` (or `client_id`), optional `post_logout_redirect_uri` (must be registered on the client) and `state`. The subject in `id_token_hint` is matched against the current user through the same subject resolver used at issuance, so pairwise subjects work correctly.
+Send the user to `identity.end_session` with an `id_token_hint` (or `client_id`), optional 
+`post_logout_redirect_uri` (must be registered on the client) and `state`. The subject in `id_token_hint` is 
+matched against the current user through the same subject resolver used at issuance, so pairwise subjects work correctly.
 
 Non-first-party clients are shown a confirmation screen. Register the view:
 
@@ -152,9 +200,13 @@ First-party clients (see [First-party clients](#first-party-clients)) skip confi
 
 ### Front-Channel Logout
 
-On logout the package renders a page with a hidden iframe per active session whose client registered a `frontchannel_logout_uri`. Sessions are tracked in `oidc_sessions`, and each iframe carries the same `sid` embedded in that session's ID token.
+On logout the package renders a page with a hidden iframe per active session whose client registered 
+a `frontchannel_logout_uri`. Sessions are tracked in `oidc_sessions`, and each iframe carries the same `sid` 
+embedded in that session's ID token.
 
-To brand the page, point `Identity::frontChannelLogoutLayout` at your own view and **embed the supplied Blade component** — you get the iframe-loading and redirect logic for free, you only style around it:
+To brand the page, point `Identity::frontChannelLogoutLayout` at your own view and 
+**embed the supplied Blade component** — you get the iframe-loading and redirect logic for free, you 
+only style around it:
 
 ```blade
 {{-- resources/views/layouts/logout.blade.php --}}
@@ -169,7 +221,9 @@ Identity::frontChannelLogoutLayout('layouts.logout');
 // your view receives ['iframeUrls' => array, 'redirectUri' => ?string]
 ```
 
-The `<x-identity::front-channel-logout>` component renders the hidden iframes and the JS that redirects once they have loaded (or after a timeout). If you don't register a layout, the package renders a minimal default page built from the same component.
+The `<x-identity::front-channel-logout>` component renders the hidden iframes and the JS that redirects once 
+they have loaded (or after a timeout). If you don't register a layout, the package renders a minimal 
+default page built from the same component.
 
 ## Configuration
 
@@ -190,8 +244,8 @@ The `<x-identity::front-channel-logout>` component renders the hidden iframes an
 Set in `AppServiceProvider::boot()`:
 
 ```php
-use Chiiya\LaravelIdentity\Identity;
-use Chiiya\LaravelIdentity\Jwt\Algorithm;
+use Mindtwo\LaravelIdentity\Identity;
+use Mindtwo\LaravelIdentity\Jwt\Algorithm;
 
 Identity::signingAlgorithm(Algorithm::ES256);                  // global default alg
 Identity::endSessionView('auth.logout-confirm');               // RP logout screen
@@ -204,15 +258,19 @@ Identity::firstPartyClientResolver(fn ($client) => $client->trusted);
 `sub` resolution is dispatched per client by `ClientAwareSubjectResolver`:
 
 - **public** (default) — `sub` is the user's identifier.
-- **pairwise** — `sub` is a salted hash unique per sector, computed by `PairwiseSubjectResolver` from `sector_identifier_uri` (or the redirect host) plus `pairwise_salt`. Set `identity.pairwise_salt` when any client uses it.
+- **pairwise** — `sub` is a salted hash unique per sector, computed by `PairwiseSubjectResolver` from 
+`sector_identifier_uri` (or the redirect host) plus `pairwise_salt`. Set `identity.pairwise_salt` when any client uses it.
 
 Set a client's `subject_type` column to `pairwise` to opt in.
 
 ## Signing keys and rotation
 
-By default the **Passport RSA key** signs ID tokens and backs every `RS*` algorithm (`RS256`/`RS384`/`RS512`), selectable globally or per client.
+By default, the **Passport RSA key** signs ID tokens and backs every `RS*` algorithm (`RS256`/`RS384`/`RS512`), 
+selectable globally or per client.
 
-For EC algorithms or key rotation, list dedicated keys in `identity.keys` (current/signing key first). When non-empty, `ConfigKeyResolver` is used automatically and every listed key is published in the JWKS so previously issued tokens keep verifying:
+For EC algorithms or key rotation, list dedicated keys in `identity.keys` (current/signing key first). When 
+non-empty, `ConfigKeyResolver` is used automatically and every listed key is published in the JWKS so previously 
+issued tokens keep verifying:
 
 ```php
 'keys' => [
@@ -242,7 +300,8 @@ Listen via Laravel's event system:
 | `IdTokenIssued` | An ID token is minted (carries the `IdTokenContext` and the encoded token) |
 | `UserLoggedOut` | A user logs out (carries the initiating client, or `null` for local logout) |
 
-For logout side effects that **must complete before the redirect** (e.g. revoking tokens), implement `LogoutEventListener` and tag it `identity.logout_listeners` — these run synchronously, ahead of the dispatched event:
+For logout side effects that **must complete before the redirect** (e.g. revoking tokens), implement 
+`LogoutEventListener` and tag it `identity.logout_listeners` — these run synchronously, ahead of the dispatched event:
 
 ```php
 $this->app->tag(RevokeTokensOnLogout::class, 'identity.logout_listeners');
@@ -250,7 +309,8 @@ $this->app->tag(RevokeTokensOnLogout::class, 'identity.logout_listeners');
 
 ## Extension points
 
-Every collaborator is bound to a contract and can be swapped in the container. Respecting custom Passport models, all client/user lookups go through `Passport::clientModel()` and the configured auth provider.
+Every collaborator is bound to a contract and can be swapped in the container. Respecting custom Passport 
+models, all client/user lookups go through `Passport::clientModel()` and the configured auth provider.
 
 | Contract | Default | Responsibility |
 | --- | --- | --- |
@@ -270,7 +330,9 @@ $this->app->extend(ScopeRegistrar::class, function ($registrar) {
 
 ## Token introspection
 
-`POST /oauth/introspect` implements RFC 7662. Clients authenticate via `client_secret_basic` or `client_secret_post`. By default a client may only introspect its own tokens; set `allow_cross_client_introspection` to `true` to lift that restriction. Revoked or expired tokens return `{"active": false}`.
+`POST /oauth/introspect` implements RFC 7662. Clients authenticate via `client_secret_basic` or 
+`client_secret_post`. By default a client may only introspect its own tokens; set `allow_cross_client_introspection` 
+to `true` to lift that restriction. Revoked or expired tokens return `{"active": false}`.
 
 ## Testing
 

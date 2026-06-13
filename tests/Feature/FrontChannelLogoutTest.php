@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Feature;
+namespace Mindtwo\LaravelIdentity\Tests\Feature;
 
-use Chiiya\LaravelIdentity\Session\OidcSession;
-use Chiiya\LaravelIdentity\Tests\Fixtures\TestClient;
-use Chiiya\LaravelIdentity\Tests\Fixtures\TestUser;
-use Chiiya\LaravelIdentity\Tests\TestCase;
 use Illuminate\Support\Facades\Blade;
 use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
+use Mindtwo\LaravelIdentity\Session\OidcSession;
+use Mindtwo\LaravelIdentity\Tests\Fixtures\TestClient;
+use Mindtwo\LaravelIdentity\Tests\Fixtures\TestUser;
+use Mindtwo\LaravelIdentity\Tests\TestCase;
 
 class FrontChannelLogoutTest extends TestCase
 {

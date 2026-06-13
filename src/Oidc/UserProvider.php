@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Oidc;
+namespace Mindtwo\LaravelIdentity\Oidc;
 
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Passport\Contracts\OAuthenticatable;

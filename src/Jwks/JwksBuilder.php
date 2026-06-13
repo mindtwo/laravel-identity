@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Jwks;
+namespace Mindtwo\LaravelIdentity\Jwks;
 
-use Chiiya\LaravelIdentity\Contracts\KeyResolver;
-use Chiiya\LaravelIdentity\Jwt\Algorithm;
-use Chiiya\LaravelIdentity\Jwt\KeyMaterial;
+use Mindtwo\LaravelIdentity\Contracts\KeyResolver;
+use Mindtwo\LaravelIdentity\Jwt\Algorithm;
+use Mindtwo\LaravelIdentity\Jwt\KeyMaterial;
 use RuntimeException;
 
 class JwksBuilder

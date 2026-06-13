@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Session;
+namespace Mindtwo\LaravelIdentity\Session;
 
-use Chiiya\LaravelIdentity\Contracts\SessionIdResolver;
 use DateTimeImmutable;
 use Illuminate\Http\Request;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
+use Mindtwo\LaravelIdentity\Contracts\SessionIdResolver;
 
 class SidManager implements SessionIdResolver
 {

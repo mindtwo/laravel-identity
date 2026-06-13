@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Feature;
+namespace Mindtwo\LaravelIdentity\Tests\Feature;
 
-use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
-use Chiiya\LaravelIdentity\Oidc\SubjectType;
-use Chiiya\LaravelIdentity\Tests\Fixtures\TestClient;
-use Chiiya\LaravelIdentity\Tests\Fixtures\TestUser;
-use Chiiya\LaravelIdentity\Tests\TestCase;
 use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
+use Mindtwo\LaravelIdentity\Contracts\SubjectIdentifierResolver;
+use Mindtwo\LaravelIdentity\Oidc\SubjectType;
+use Mindtwo\LaravelIdentity\Tests\Fixtures\TestClient;
+use Mindtwo\LaravelIdentity\Tests\Fixtures\TestUser;
+use Mindtwo\LaravelIdentity\Tests\TestCase;
 
 class ClientModelOverrideTest extends TestCase
 {

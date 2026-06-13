@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Unit\Oidc;
+namespace Mindtwo\LaravelIdentity\Tests\Unit\Oidc;
 
-use Chiiya\LaravelIdentity\Oidc\SubjectResolvers\ClientAwareSubjectResolver;
-use Chiiya\LaravelIdentity\Oidc\SubjectResolvers\PairwiseSubjectResolver;
-use Chiiya\LaravelIdentity\Oidc\SubjectResolvers\PublicSubjectResolver;
-use Chiiya\LaravelIdentity\Tests\Fixtures\TestClient;
-use Chiiya\LaravelIdentity\Tests\Fixtures\TestUser;
-use Chiiya\LaravelIdentity\Tests\TestCase;
 use Laravel\Passport\Client;
+use Mindtwo\LaravelIdentity\Oidc\SubjectResolvers\ClientAwareSubjectResolver;
+use Mindtwo\LaravelIdentity\Oidc\SubjectResolvers\PairwiseSubjectResolver;
+use Mindtwo\LaravelIdentity\Oidc\SubjectResolvers\PublicSubjectResolver;
+use Mindtwo\LaravelIdentity\Tests\Fixtures\TestClient;
+use Mindtwo\LaravelIdentity\Tests\Fixtures\TestUser;
+use Mindtwo\LaravelIdentity\Tests\TestCase;
 
 class ClientAwareSubjectResolverTest extends TestCase
 {

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Jwt;
+namespace Mindtwo\LaravelIdentity\Jwt;
 
 enum Algorithm: string
 {

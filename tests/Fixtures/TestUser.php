@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Fixtures;
+namespace Mindtwo\LaravelIdentity\Tests\Fixtures;
 
-use Chiiya\LaravelIdentity\Contracts\ClaimProvider;
 use DateTimeImmutable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
+use Mindtwo\LaravelIdentity\Contracts\ClaimProvider;
 
 class TestUser extends Authenticatable implements ClaimProvider, OAuthenticatable
 {
@@ -14,7 +14,6 @@ class TestUser extends Authenticatable implements ClaimProvider, OAuthenticatabl
     protected $table = 'users';
     protected $fillable = ['name', 'email', 'password'];
     protected $hidden = ['password', 'remember_token'];
-
     protected DateTimeImmutable $authTime;
 
     public function getAuthTime(): DateTimeImmutable

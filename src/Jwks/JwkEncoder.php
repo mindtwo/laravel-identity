@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Jwks;
+namespace Mindtwo\LaravelIdentity\Jwks;
 
 class JwkEncoder
 {

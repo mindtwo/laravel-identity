@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Events;
+namespace Mindtwo\LaravelIdentity\Events;
 
-use Chiiya\LaravelIdentity\Oidc\AuthRequestContext;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
+use Mindtwo\LaravelIdentity\Oidc\AuthRequestContext;
 
 class AuthorizationRequestValidated
 {

@@ -1,18 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Oidc;
+namespace Mindtwo\LaravelIdentity\Oidc;
 
-use Chiiya\LaravelIdentity\Contracts\SessionIdResolver;
-use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
-use Chiiya\LaravelIdentity\Events\IdTokenIssued;
-use Chiiya\LaravelIdentity\Identity;
-use Chiiya\LaravelIdentity\Jwt\JwtIssuer;
 use DateTimeImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\Passport;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\ResponseTypes\BearerTokenResponse;
+use Mindtwo\LaravelIdentity\Contracts\SessionIdResolver;
+use Mindtwo\LaravelIdentity\Contracts\SubjectIdentifierResolver;
+use Mindtwo\LaravelIdentity\Events\IdTokenIssued;
+use Mindtwo\LaravelIdentity\Identity;
+use Mindtwo\LaravelIdentity\Jwt\JwtIssuer;
 
 class IdTokenResponseType extends BearerTokenResponse
 {

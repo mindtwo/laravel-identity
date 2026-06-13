@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Discovery;
+namespace Mindtwo\LaravelIdentity\Discovery;
 
-use Chiiya\LaravelIdentity\Contracts\DiscoveryDocumentBuilder;
-use Chiiya\LaravelIdentity\Contracts\KeyResolver;
-use Chiiya\LaravelIdentity\Contracts\ScopeRegistrar;
-use Chiiya\LaravelIdentity\Identity;
+use Mindtwo\LaravelIdentity\Contracts\DiscoveryDocumentBuilder;
+use Mindtwo\LaravelIdentity\Contracts\KeyResolver;
+use Mindtwo\LaravelIdentity\Contracts\ScopeRegistrar;
+use Mindtwo\LaravelIdentity\Identity;
 
 class DefaultDiscoveryBuilder implements DiscoveryDocumentBuilder
 {

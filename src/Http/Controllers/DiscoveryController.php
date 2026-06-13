@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Http\Controllers;
+namespace Mindtwo\LaravelIdentity\Http\Controllers;
 
-use Chiiya\LaravelIdentity\Contracts\DiscoveryDocumentBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
+use Mindtwo\LaravelIdentity\Contracts\DiscoveryDocumentBuilder;
 
 class DiscoveryController
 {

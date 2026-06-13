@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Logout;
+namespace Mindtwo\LaravelIdentity\Logout;
 
 use Laravel\Passport\Client;
 

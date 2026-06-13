@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Oidc\Scopes;
+namespace Mindtwo\LaravelIdentity\Oidc\Scopes;
 
-use Chiiya\LaravelIdentity\Contracts\ScopeRegistrar;
+use Mindtwo\LaravelIdentity\Contracts\ScopeRegistrar;
 
 class StandardScopeRegistrar implements ScopeRegistrar
 {

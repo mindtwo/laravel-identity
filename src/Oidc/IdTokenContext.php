@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Oidc;
+namespace Mindtwo\LaravelIdentity\Oidc;
 
-use Chiiya\LaravelIdentity\Jwt\Algorithm;
 use DateTimeImmutable;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
+use Mindtwo\LaravelIdentity\Jwt\Algorithm;
 
 readonly class IdTokenContext
 {

@@ -1,10 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Introspection;
+namespace Mindtwo\LaravelIdentity\Introspection;
 
-use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
-use Chiiya\LaravelIdentity\Identity;
-use Chiiya\LaravelIdentity\Oidc\UserProvider;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\Passport;
@@ -13,6 +10,9 @@ use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Token\Parser;
 use Lcobucci\JWT\Token\Plain;
 use Lcobucci\JWT\Token\RegisteredClaims;
+use Mindtwo\LaravelIdentity\Contracts\SubjectIdentifierResolver;
+use Mindtwo\LaravelIdentity\Identity;
+use Mindtwo\LaravelIdentity\Oidc\UserProvider;
 use Throwable;
 
 readonly class TokenIntrospector

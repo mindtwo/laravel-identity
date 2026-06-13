@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Http\Controllers;
+namespace Mindtwo\LaravelIdentity\Http\Controllers;
 
-use Chiiya\LaravelIdentity\Jwks\JwksBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Mindtwo\LaravelIdentity\Jwks\JwksBuilder;
 
 class JwksController
 {

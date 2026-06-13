@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Events;
+namespace Mindtwo\LaravelIdentity\Events;
 
-use Chiiya\LaravelIdentity\Oidc\IdTokenContext;
+use Mindtwo\LaravelIdentity\Oidc\IdTokenContext;
 
 class IdTokenIssued
 {

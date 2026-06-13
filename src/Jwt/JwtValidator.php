@@ -1,9 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Jwt;
+namespace Mindtwo\LaravelIdentity\Jwt;
 
-use Chiiya\LaravelIdentity\Contracts\KeyResolver;
-use Chiiya\LaravelIdentity\Exceptions\InvalidIdTokenHint;
 use Illuminate\Support\Facades\Log;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Signer\Ecdsa\Sha256 as EcSha256;
@@ -17,6 +15,8 @@ use Lcobucci\JWT\Token\Parser;
 use Lcobucci\JWT\Token\Plain;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Lcobucci\JWT\Validation\Validator;
+use Mindtwo\LaravelIdentity\Contracts\KeyResolver;
+use Mindtwo\LaravelIdentity\Exceptions\InvalidIdTokenHint;
 use Throwable;
 
 class JwtValidator

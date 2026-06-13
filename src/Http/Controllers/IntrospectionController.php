@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Http\Controllers;
+namespace Mindtwo\LaravelIdentity\Http\Controllers;
 
-use Chiiya\LaravelIdentity\Http\Requests\IntrospectRequest;
-use Chiiya\LaravelIdentity\Introspection\TokenIntrospector;
 use Illuminate\Http\JsonResponse;
 use Laravel\Passport\Client;
+use Mindtwo\LaravelIdentity\Http\Requests\IntrospectRequest;
+use Mindtwo\LaravelIdentity\Introspection\TokenIntrospector;
 
 class IntrospectionController
 {

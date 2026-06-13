@@ -1,10 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Jwt;
+namespace Mindtwo\LaravelIdentity\Jwt;
 
-use Chiiya\LaravelIdentity\Contracts\KeyResolver;
-use Chiiya\LaravelIdentity\Identity;
-use Chiiya\LaravelIdentity\Oidc\IdTokenContext;
 use Lcobucci\JWT\Encoding\ChainedFormatter;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Signer;
@@ -16,6 +13,9 @@ use Lcobucci\JWT\Signer\Rsa\Sha256 as RsaSha256;
 use Lcobucci\JWT\Signer\Rsa\Sha384 as RsaSha384;
 use Lcobucci\JWT\Signer\Rsa\Sha512 as RsaSha512;
 use Lcobucci\JWT\Token\Builder;
+use Mindtwo\LaravelIdentity\Contracts\KeyResolver;
+use Mindtwo\LaravelIdentity\Identity;
+use Mindtwo\LaravelIdentity\Oidc\IdTokenContext;
 
 class JwtIssuer
 {

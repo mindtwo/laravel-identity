@@ -1,33 +1,27 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Http\Controllers;
+namespace Mindtwo\LaravelIdentity\Http\Controllers;
 
-use Chiiya\LaravelIdentity\Contracts\LogoutEventListener;
-use Chiiya\LaravelIdentity\Contracts\SessionIdResolver;
-use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
-use Chiiya\LaravelIdentity\Events\UserLoggedOut;
-use Chiiya\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
-use Chiiya\LaravelIdentity\Http\Requests\EndSessionRequest;
-use Chiiya\LaravelIdentity\Identity;
-use Chiiya\LaravelIdentity\Logout\FrontChannelOrchestrator;
-use Chiiya\LaravelIdentity\Logout\LogoutRequest;
-use Chiiya\LaravelIdentity\Logout\RpInitiatedLogoutValidator;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
+use Mindtwo\LaravelIdentity\Contracts\LogoutEventListener;
+use Mindtwo\LaravelIdentity\Contracts\SessionIdResolver;
+use Mindtwo\LaravelIdentity\Contracts\SubjectIdentifierResolver;
+use Mindtwo\LaravelIdentity\Events\UserLoggedOut;
+use Mindtwo\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
+use Mindtwo\LaravelIdentity\Http\Requests\EndSessionRequest;
+use Mindtwo\LaravelIdentity\Identity;
+use Mindtwo\LaravelIdentity\Logout\FrontChannelOrchestrator;
+use Mindtwo\LaravelIdentity\Logout\LogoutRequest;
+use Mindtwo\LaravelIdentity\Logout\RpInitiatedLogoutValidator;
 use RuntimeException;
 
 /**
  * RP-Initiated Logout endpoint.
- *
- * GET  /oauth/logout — the browser is redirected here by the RP. For a
- *      non-first-party client we render the confirmation screen; otherwise the
- *      logout proceeds immediately.
- * POST /oauth/logout — the logout is confirmed (the confirmation form was
- *      submitted, or the RP posted the request directly), so it always proceeds.
  *
  * @see https://openid.net/specs/openid-connect-rpinitiated-1_0.html
  */

@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Oidc\SubjectResolvers;
+namespace Mindtwo\LaravelIdentity\Oidc\SubjectResolvers;
 
-use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
+use Mindtwo\LaravelIdentity\Contracts\SubjectIdentifierResolver;
 use RuntimeException;
 
 class PairwiseSubjectResolver implements SubjectIdentifierResolver

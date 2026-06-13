@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Http\Requests;
+namespace Mindtwo\LaravelIdentity\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 

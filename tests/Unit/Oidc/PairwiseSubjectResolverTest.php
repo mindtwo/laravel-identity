@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Unit\Oidc;
+namespace Mindtwo\LaravelIdentity\Tests\Unit\Oidc;
 
-use Chiiya\LaravelIdentity\Oidc\SubjectResolvers\PairwiseSubjectResolver;
-use Chiiya\LaravelIdentity\Tests\Fixtures\TestUser;
-use Chiiya\LaravelIdentity\Tests\TestCase;
 use Laravel\Passport\Client;
+use Mindtwo\LaravelIdentity\Oidc\SubjectResolvers\PairwiseSubjectResolver;
+use Mindtwo\LaravelIdentity\Tests\Fixtures\TestUser;
+use Mindtwo\LaravelIdentity\Tests\TestCase;
 use RuntimeException;
 
 class PairwiseSubjectResolverTest extends TestCase

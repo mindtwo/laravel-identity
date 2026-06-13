@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests;
+namespace Mindtwo\LaravelIdentity\Tests;
 
-use Chiiya\LaravelIdentity\Identity;
-use Chiiya\LaravelIdentity\LaravelIdentityServiceProvider;
-use Chiiya\LaravelIdentity\Tests\Fixtures\TestUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Laravel\Passport\PassportServiceProvider;
+use Mindtwo\LaravelIdentity\Identity;
+use Mindtwo\LaravelIdentity\LaravelIdentityServiceProvider;
+use Mindtwo\LaravelIdentity\Tests\Fixtures\TestUser;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -18,7 +18,7 @@ abstract class TestCase extends BaseTestCase
         Identity::reset();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Chiiya\LaravelIdentity\Tests\Factories\\'.class_basename($modelName).'Factory',
+            fn (string $modelName) => 'Mindtwo\LaravelIdentity\Tests\Factories\\'.class_basename($modelName).'Factory',
         );
     }
 

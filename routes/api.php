@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-use Chiiya\LaravelIdentity\Http\Controllers\DiscoveryController;
-use Chiiya\LaravelIdentity\Http\Controllers\IntrospectionController;
-use Chiiya\LaravelIdentity\Http\Controllers\JwksController;
-use Chiiya\LaravelIdentity\Http\Controllers\UserInfoController;
-use Chiiya\LaravelIdentity\Http\Middleware\AuthenticateClient;
 use Illuminate\Support\Facades\Route;
 use Laravel\Passport\Http\Middleware\CheckToken;
+use Mindtwo\LaravelIdentity\Http\Controllers\DiscoveryController;
+use Mindtwo\LaravelIdentity\Http\Controllers\IntrospectionController;
+use Mindtwo\LaravelIdentity\Http\Controllers\JwksController;
+use Mindtwo\LaravelIdentity\Http\Controllers\UserInfoController;
+use Mindtwo\LaravelIdentity\Http\Middleware\AuthenticateClient;
 
 Route::get('/.well-known/openid-configuration', [DiscoveryController::class, 'show'])
     ->name('identity.discovery');

@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Oidc\SubjectResolvers;
+namespace Mindtwo\LaravelIdentity\Oidc\SubjectResolvers;
 
-use Chiiya\LaravelIdentity\Contracts\SubjectIdentifierResolver;
-use Chiiya\LaravelIdentity\Oidc\SubjectType;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
+use Mindtwo\LaravelIdentity\Contracts\SubjectIdentifierResolver;
+use Mindtwo\LaravelIdentity\Oidc\SubjectType;
 
 /**
  * Dispatches `sub` resolution to the resolver matching the client's registered

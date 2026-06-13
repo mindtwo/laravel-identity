@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Oidc\Scopes;
+namespace Mindtwo\LaravelIdentity\Oidc\Scopes;
 
-use Chiiya\LaravelIdentity\Contracts\ClaimProvider;
 use Laravel\Passport\Contracts\OAuthenticatable;
+use Mindtwo\LaravelIdentity\Contracts\ClaimProvider;
 
 /**
  * Provides no claims by default — host apps provide their own ClaimProvider that

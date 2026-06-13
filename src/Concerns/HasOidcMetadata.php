@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Concerns;
+namespace Mindtwo\LaravelIdentity\Concerns;
 
-use Chiiya\LaravelIdentity\Identity;
-use Chiiya\LaravelIdentity\Jwt\Algorithm;
-use Chiiya\LaravelIdentity\Oidc\SubjectType;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Passport\Scope;
+use Mindtwo\LaravelIdentity\Identity;
+use Mindtwo\LaravelIdentity\Jwt\Algorithm;
+use Mindtwo\LaravelIdentity\Oidc\SubjectType;
 
 /**
  * Apply this trait to your Client model (which extends Laravel\Passport\Client)

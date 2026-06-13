@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Tests\Unit\Oidc;
+namespace Mindtwo\LaravelIdentity\Tests\Unit\Oidc;
 
-use Chiiya\LaravelIdentity\Contracts\ClaimProvider;
-use Chiiya\LaravelIdentity\Oidc\ClaimAggregator;
-use Chiiya\LaravelIdentity\Oidc\Scopes\StandardScopeRegistrar;
-use Chiiya\LaravelIdentity\Tests\Fixtures\TestUser;
-use Chiiya\LaravelIdentity\Tests\TestCase;
 use Laravel\Passport\Contracts\OAuthenticatable;
+use Mindtwo\LaravelIdentity\Contracts\ClaimProvider;
+use Mindtwo\LaravelIdentity\Oidc\ClaimAggregator;
+use Mindtwo\LaravelIdentity\Oidc\Scopes\StandardScopeRegistrar;
+use Mindtwo\LaravelIdentity\Tests\Fixtures\TestUser;
+use Mindtwo\LaravelIdentity\Tests\TestCase;
 
 class ClaimAggregatorTest extends TestCase
 {

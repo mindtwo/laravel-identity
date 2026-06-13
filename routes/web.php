@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-use Chiiya\LaravelIdentity\Http\Controllers\EndSessionController;
-use Chiiya\LaravelIdentity\Http\Controllers\FrontChannelLogoutController;
 use Illuminate\Support\Facades\Route;
+use Mindtwo\LaravelIdentity\Http\Controllers\EndSessionController;
+use Mindtwo\LaravelIdentity\Http\Controllers\FrontChannelLogoutController;
 
 // The end session endpoint must be reachable without an active session so that
 // RP-initiated logout can honor id_token_hint / post_logout_redirect_uri. GET may

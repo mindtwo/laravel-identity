@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Chiiya\LaravelIdentity\Http\Middleware;
+namespace Mindtwo\LaravelIdentity\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
