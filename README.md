@@ -4,7 +4,7 @@
   <p align="center">
     <img src="https://img.shields.io/github/check-runs/mindtwo/laravel-identity/master">
     <img src="https://img.shields.io/badge/php-%3E%3D%208.4-8892BF.svg">
-    <img src="https://img.shields.io/badge/laravel-13%20%7C%2012%20%7C%2013-FF2D20.svg">
+    <img src="https://img.shields.io/badge/laravel-13-FF2D20.svg">
   </p>
 
   <strong>
