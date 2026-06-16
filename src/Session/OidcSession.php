@@ -21,7 +21,15 @@ class OidcSession extends Model
     use HasUuids;
     public $timestamps = false;
     protected $table = 'oidc_sessions';
-    protected $fillable = ['user_id', 'client_id', 'laravel_session_id', 'auth_time', 'created_at', 'last_seen_at'];
+    protected $fillable = [
+        'user_id',
+        'client_id',
+        'laravel_session_id',
+        'auth_time',
+        'created_at',
+        'last_seen_at',
+        'revoked_at',
+    ];
     protected $casts = [
         'auth_time' => 'datetime',
         'created_at' => 'datetime',
