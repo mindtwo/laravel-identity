@@ -320,10 +320,28 @@ models, all client/user lookups go through `Passport::clientModel()` and the con
 | `SessionIdResolver` | `SidManager` | `sid` issuance and revocation |
 | `DiscoveryDocumentBuilder` | `DefaultDiscoveryBuilder` | The discovery document |
 
+To add a custom scope and the claims it grants, call `Identity::registerScope()` from
+any service provider's `register()` or `boot()` — order relative to this package does
+not matter, and the scope reaches Passport, discovery, and claim filtering automatically:
+
 ```php
-// Override any default, e.g. add custom scopes/claims:
+use Mindtwo\LaravelIdentity\Identity;
+
+// AppServiceProvider::boot()
+Identity::registerScope('org', [
+    'https://issuer.example/department',
+    'https://issuer.example/team',
+]);
+```
+
+The claim names must match the keys your `ClaimProvider` emits; namespace any
+non-standard claims with a URI you own so they cannot collide with standard ones.
+
+To replace a collaborator entirely, swap its container binding:
+
+```php
 $this->app->extend(ScopeRegistrar::class, function ($registrar) {
-    $registrar->register('roles', ['roles']);
+    // return your own ScopeRegistrar implementation
     return $registrar;
 });
 ```
