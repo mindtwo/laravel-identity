@@ -30,6 +30,15 @@ class Identity
     public static Algorithm $defaultSigningAlgorithm = Algorithm::RS256;
 
     /**
+     * Custom scopes registered via registerScope(), keyed by scope name. Flushed
+     * into the ScopeRegistrar after every provider has booted, so the calling
+     * provider's boot order relative to this package does not matter.
+     *
+     * @var array<string, list<string>>
+     */
+    public static array $scopes = [];
+
+    /**
      * Register the view name for the RP-initiated logout confirmation screen.
      * Receives: ['client' => Client, 'request' => LogoutRequest, 'state' => ?string].
      */
@@ -65,6 +74,21 @@ class Identity
     }
 
     /**
+     * Register a custom OIDC scope and the claim names it grants. Safe to call from
+     * any service provider's register() or boot(): the scope is applied to the
+     * ScopeRegistrar after all providers have booted, so it always reaches Passport,
+     * discovery, and claim filtering regardless of provider order. Claim names must
+     * match the keys the corresponding ClaimProvider emits (namespace your custom
+     * claims, e.g. https://issuer.example/department).
+     *
+     * @param list<string> $claims
+     */
+    public static function registerScope(string $scope, array $claims): void
+    {
+        static::$scopes[$scope] = array_values(array_unique([...static::$scopes[$scope] ?? [], ...$claims]));
+    }
+
+    /**
      * The OpenID Provider issuer identifier. Single source of truth so the value
      * is byte-for-byte identical across the discovery document, id_token `iss`,
      * introspection, and logout validation — RPs compare it by exact string.
@@ -97,5 +121,6 @@ class Identity
         static::$frontChannelLogoutLayout = null;
         static::$firstPartyClientResolver = null;
         static::$defaultSigningAlgorithm = Algorithm::RS256;
+        static::$scopes = [];
     }
 }

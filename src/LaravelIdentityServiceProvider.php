@@ -105,8 +105,30 @@ class LaravelIdentityServiceProvider extends PackageServiceProvider
         // Swap Passport's BearerTokenResponse so token endpoint responses include id_token.
         Passport::useAuthorizationServerResponseType($this->app->make(IdTokenResponseType::class));
 
-        if (config('identity.register_openid_scope', true)) {
-            $this->registerOidcScopes();
+        // Deferred until every provider has booted: host apps register custom scopes
+        // (via Identity::registerScope() or the ScopeRegistrar directly) from their own
+        // providers, and we cannot assume they boot before us. Running here guarantees
+        // the registry is complete before it is snapshotted into Passport.
+        $this->app->booted(function (): void {
+            $this->applyCustomScopes();
+
+            if (config('identity.register_openid_scope', true)) {
+                $this->registerOidcScopes();
+            }
+        });
+    }
+
+    /**
+     * Flush scopes buffered via Identity::registerScope() into the ScopeRegistrar.
+     * The registrar backs discovery and claim filtering, so this runs regardless of
+     * the register_openid_scope toggle (which only governs the Passport snapshot).
+     */
+    private function applyCustomScopes(): void
+    {
+        $registrar = $this->app->make(ScopeRegistrar::class);
+
+        foreach (Identity::$scopes as $scope => $claims) {
+            $registrar->register($scope, $claims);
         }
     }
 
