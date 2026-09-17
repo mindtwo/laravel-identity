@@ -19,6 +19,7 @@ use Mindtwo\LaravelIdentity\Contracts\SessionIdResolver;
 use Mindtwo\LaravelIdentity\Contracts\SubjectIdentifierResolver;
 use Mindtwo\LaravelIdentity\Discovery\DefaultDiscoveryBuilder;
 use Mindtwo\LaravelIdentity\Http\Controllers\AuthorizationController;
+use Mindtwo\LaravelIdentity\Http\Controllers\EndSessionController;
 use Mindtwo\LaravelIdentity\Introspection\TokenIntrospector;
 use Mindtwo\LaravelIdentity\Jwks\JwksBuilder;
 use Mindtwo\LaravelIdentity\Jwt\JwtIssuer;
@@ -55,8 +56,8 @@ class LaravelIdentityServiceProvider extends PackageServiceProvider
         // Swap Passport's authorization controller with ours.
         $this->app->bind(PassportAuthorizationController::class, AuthorizationController::class);
 
-        // Mirror Passport's contextual StatefulGuard binding for our controller.
-        $this->app->when(AuthorizationController::class)
+        // Mirror Passport's contextual StatefulGuard binding for our controllers.
+        $this->app->when([AuthorizationController::class, EndSessionController::class])
             ->needs(StatefulGuard::class)
             ->give(fn () => Auth::guard(config('passport.guard')));
 

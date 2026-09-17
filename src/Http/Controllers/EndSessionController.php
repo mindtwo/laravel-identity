@@ -2,6 +2,7 @@
 
 namespace Mindtwo\LaravelIdentity\Http\Controllers;
 
+use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\RedirectResponse;
@@ -34,6 +35,7 @@ class EndSessionController
         private readonly SubjectIdentifierResolver $subjectResolver,
         private readonly Container $container,
         private readonly Dispatcher $events,
+        private readonly StatefulGuard $guard,
     ) {}
 
     /**
@@ -172,6 +174,10 @@ class EndSessionController
         $iframeUrls = $client instanceof Client ? $this->orchestrator->buildIframeUrls($user) : [];
 
         $this->sidResolver->invalidate($user);
+
+        // Invalidating the session alone leaves a remember-me cookie intact, which
+        // would silently re-authenticate the user on the RP's next authorize request.
+        $this->guard->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
