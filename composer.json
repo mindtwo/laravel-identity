@@ -26,6 +26,7 @@
         "chiiya/laravel-code-style": "^3.3",
         "mockery/mockery": "^1.6",
         "orchestra/testbench": "^11.0",
+        "phpseclib/phpseclib": "^4.0",
         "phpunit/phpunit": "^13.0"
     },
     "autoload": {

@@ -14,7 +14,7 @@ use Lcobucci\JWT\Validation\Validator;
 use Mindtwo\LaravelIdentity\Tests\Fixtures\TestClient;
 use Mindtwo\LaravelIdentity\Tests\Fixtures\TestUser;
 use Mindtwo\LaravelIdentity\Tests\TestCase;
-use phpseclib3\Crypt\PublicKeyLoader;
+use phpseclib4\Crypt\PublicKeyLoader;
 
 class JwksVerificationTest extends TestCase
 {
