@@ -39,8 +39,10 @@ class Identity
     public static array $scopes = [];
 
     /**
-     * Register the view name for the RP-initiated logout confirmation screen.
-     * Receives: ['client' => Client, 'request' => LogoutRequest, 'state' => ?string].
+     * Register the view for the RP-initiated logout confirmation screen: a Blade view
+     * name, or a closure that receives the view data and returns a view name or any
+     * response/Responsable (e.g. Inertia::render()).
+     * Data: ['client' => Client, 'request' => LogoutRequest, 'state' => ?string].
      */
     public static function endSessionView(Closure|string $view): void
     {
@@ -48,8 +50,9 @@ class Identity
     }
 
     /**
-     * Register an optional layout view that wraps the front-channel logout Blade component.
-     * Receives: ['iframeUrls' => array, 'redirectUri' => ?string].
+     * Register an optional layout view that wraps the front-channel logout Blade
+     * component. Accepts the same view name or closure forms as endSessionView().
+     * Data: ['iframeUrls' => list<string>, 'redirectUri' => string].
      */
     public static function frontChannelLogoutLayout(Closure|string $view): void
     {

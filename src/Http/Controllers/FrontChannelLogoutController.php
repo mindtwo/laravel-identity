@@ -3,9 +3,10 @@
 namespace Mindtwo\LaravelIdentity\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Mindtwo\LaravelIdentity\Http\Responses\ViewResponse;
 use Mindtwo\LaravelIdentity\Identity;
 use Mindtwo\LaravelIdentity\Logout\FrontChannelOrchestrator;
+use Symfony\Component\HttpFoundation\Response;
 
 class FrontChannelLogoutController
 {
@@ -23,20 +24,12 @@ class FrontChannelLogoutController
 
         $redirectUri = $this->safeRedirect($request->input('redirect'));
 
-        $layout = Identity::$frontChannelLogoutLayout;
+        $view = Identity::$frontChannelLogoutLayout ?? 'identity::front-channel-logout';
 
-        $data = [
+        return (new ViewResponse($view, [
             'iframeUrls' => $iframeUrls,
             'redirectUri' => $redirectUri,
-        ];
-
-        if ($layout !== null) {
-            $layoutView = is_callable($layout) ? $layout() : $layout;
-
-            return response()->view($layoutView, $data);
-        }
-
-        return response()->view('identity::front-channel-logout', $data);
+        ]))->toResponse($request);
     }
 
     /**

@@ -5,7 +5,6 @@ namespace Mindtwo\LaravelIdentity\Http\Controllers;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Response;
 use Laravel\Passport\Client;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Mindtwo\LaravelIdentity\Contracts\LogoutEventListener;
@@ -14,11 +13,13 @@ use Mindtwo\LaravelIdentity\Contracts\SubjectIdentifierResolver;
 use Mindtwo\LaravelIdentity\Events\UserLoggedOut;
 use Mindtwo\LaravelIdentity\Exceptions\InvalidRpLogoutRequest;
 use Mindtwo\LaravelIdentity\Http\Requests\EndSessionRequest;
+use Mindtwo\LaravelIdentity\Http\Responses\ViewResponse;
 use Mindtwo\LaravelIdentity\Identity;
 use Mindtwo\LaravelIdentity\Logout\FrontChannelOrchestrator;
 use Mindtwo\LaravelIdentity\Logout\LogoutRequest;
 use Mindtwo\LaravelIdentity\Logout\RpInitiatedLogoutValidator;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * RP-Initiated Logout endpoint.
@@ -40,7 +41,7 @@ class EndSessionController
      * GET: show the confirmation screen for a non-first-party client, otherwise
      * proceed to log out.
      */
-    public function show(EndSessionRequest $request): RedirectResponse|Response
+    public function show(EndSessionRequest $request): Response
     {
         $user = $request->user();
 
@@ -58,7 +59,7 @@ class EndSessionController
         // RP-Initiated Logout §6: confirm with the End-User before logging out,
         // unless the client is trusted (first-party).
         if (! Identity::clientIsFirstParty($logout->client)) {
-            return $this->confirmationScreen($logout);
+            return $this->confirmationScreen($request, $logout);
         }
 
         return $this->endSession($request, $user, $logout->client, $logout->postLogoutRedirectUri, $logout->state);
@@ -67,7 +68,7 @@ class EndSessionController
     /**
      * POST: the logout is already confirmed, so always proceed.
      */
-    public function logout(EndSessionRequest $request): RedirectResponse|Response
+    public function logout(EndSessionRequest $request): Response
     {
         $user = $request->user();
 
@@ -126,7 +127,7 @@ class EndSessionController
         }
     }
 
-    private function confirmationScreen(LogoutRequest $logout): Response
+    private function confirmationScreen(EndSessionRequest $request, LogoutRequest $logout): Response
     {
         $view = Identity::$endSessionView;
 
@@ -136,11 +137,11 @@ class EndSessionController
             );
         }
 
-        return response()->view(is_callable($view) ? $view() : $view, [
+        return (new ViewResponse($view, [
             'client' => $logout->client,
             'request' => $logout,
             'state' => $logout->state,
-        ]);
+        ]))->toResponse($request);
     }
 
     /**
@@ -154,7 +155,7 @@ class EndSessionController
         ?Client $client,
         ?string $redirectUri,
         ?string $state,
-    ): RedirectResponse|Response {
+    ): Response {
         $event = new UserLoggedOut($user, $client);
 
         // Synchronous listeners run first (e.g. token revocation that must complete
@@ -179,7 +180,7 @@ class EndSessionController
 
         return $iframeUrls === []
             ? redirect($target)
-            : $this->frontChannelPage($iframeUrls, $target);
+            : $this->frontChannelPage($request, $iframeUrls, $target);
     }
 
     /**
@@ -189,17 +190,14 @@ class EndSessionController
      *
      * @param list<string> $iframeUrls
      */
-    private function frontChannelPage(array $iframeUrls, string $redirectUri): Response
+    private function frontChannelPage(EndSessionRequest $request, array $iframeUrls, string $redirectUri): Response
     {
-        $data = ['iframeUrls' => $iframeUrls, 'redirectUri' => $redirectUri];
+        $view = Identity::$frontChannelLogoutLayout ?? 'identity::front-channel-logout';
 
-        $layout = Identity::$frontChannelLogoutLayout;
-
-        if ($layout !== null) {
-            return response()->view(is_callable($layout) ? $layout() : $layout, $data);
-        }
-
-        return response()->view('identity::front-channel-logout', $data);
+        return (new ViewResponse($view, [
+            'iframeUrls' => $iframeUrls,
+            'redirectUri' => $redirectUri,
+        ]))->toResponse($request);
     }
 
     /**
