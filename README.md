@@ -198,6 +198,24 @@ Identity::endSessionView('auth.logout-confirm');
 
 First-party clients (see [First-party clients](#first-party-clients)) skip confirmation.
 
+Instead of a view name you can pass a closure. It receives the same data and may return a view name, a 
+response, or any `Responsable` — so the screen can be an Inertia page, just like `Passport::authorizationView()`:
+
+```php
+Identity::endSessionView(fn (array $data) => Inertia::render('Auth/LogoutConfirm', [
+    'clientName' => $data['client']->name,
+    'clientId' => (string) $data['client']->getKey(),
+    'idTokenHint' => request('id_token_hint'),
+    'postLogoutRedirectUri' => $data['request']->postLogoutRedirectUri,
+    'state' => $data['state'],
+]));
+```
+
+The confirmation form POSTs those parameters back to `route('identity.end_session.confirm')`. Submit it as a 
+**native form** (including the CSRF token), not via Inertia's `router.post()`: the response is either a redirect 
+to the RP's external `post_logout_redirect_uri` or the front-channel logout page, neither of which an Inertia 
+XHR visit can follow.
+
 ### Front-Channel Logout
 
 On logout the package renders a page with a hidden iframe per active session whose client registered 
@@ -220,6 +238,10 @@ only style around it:
 Identity::frontChannelLogoutLayout('layouts.logout');
 // your view receives ['iframeUrls' => array, 'redirectUri' => ?string]
 ```
+
+`frontChannelLogoutLayout()` accepts the same closure form as `endSessionView()`. If you return an Inertia 
+page from it, the Blade component is not available, so your page has to load the hidden `iframeUrls` iframes and 
+redirect to `redirectUri` itself.
 
 The `<x-identity::front-channel-logout>` component renders the hidden iframes and the JS that redirects once 
 they have loaded (or after a timeout). If you don't register a layout, the package renders a minimal 
