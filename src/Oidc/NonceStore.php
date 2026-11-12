@@ -44,6 +44,14 @@ class NonceStore
     }
 
     /**
+     * Clear the auth code marker before a new token response is created.
+     */
+    public function resetCurrentAuthCode(): void
+    {
+        $this->currentAuthCodeId = null;
+    }
+
+    /**
      * Get auth code previously remembered.
      */
     public function currentAuthCodeId(): ?string
