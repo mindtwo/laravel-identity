@@ -7,6 +7,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\Passport;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\ResponseTypes\BearerTokenResponse;
 use Mindtwo\LaravelIdentity\Contracts\SessionIdResolver;
 use Mindtwo\LaravelIdentity\Contracts\SubjectIdentifierResolver;
@@ -60,6 +61,10 @@ class IdTokenResponseType extends BearerTokenResponse
         $authCodeId = $this->nonceStore->currentAuthCodeId();
         $nonceData = $authCodeId !== null ? $this->nonceStore->pull($authCodeId) : null;
 
+        if ($authCodeId !== null && ($nonceData === null || ! isset($nonceData['auth_time']))) {
+            throw OAuthServerException::serverError('OIDC authorization context unavailable');
+        }
+
         if ($nonceData !== null) {
             // Authorization code grant: nonce, sid and auth_time were bound to the code.
             $nonce = $nonceData['nonce'] ?? null;
@@ -109,5 +114,11 @@ class IdTokenResponseType extends BearerTokenResponse
         $this->events->dispatch(new IdTokenIssued($context, $idToken));
 
         return ['id_token' => $idToken];
+    }
+
+    public function __clone(): void
+    {
+        // League clones the response before each grant; NonceStore is shared.
+        $this->nonceStore->resetCurrentAuthCode();
     }
 }
