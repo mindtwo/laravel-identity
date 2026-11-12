@@ -13,6 +13,7 @@ use Laravel\Passport\Contracts\AuthorizationViewResponse;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\Http\Controllers\AuthorizationController as PassportAuthorizationController;
 use League\OAuth2\Server\AuthorizationServer;
+use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use Mindtwo\LaravelIdentity\Contracts\SessionIdResolver;
 use Mindtwo\LaravelIdentity\Events\AuthorizationRequestValidated;
 use Mindtwo\LaravelIdentity\Oidc\AuthRequestContext;
@@ -43,6 +44,15 @@ class AuthorizationController extends PassportAuthorizationController
         ResponseInterface $psrResponse,
         AuthorizationViewResponse $viewResponse,
     ): AuthorizationViewResponse|Response {
+        // Preserve pending consent until the new OAuth request passes validation.
+        $this->withErrorHandling(
+            fn (): AuthorizationRequestInterface => $this->server->validateAuthorizationRequest($psrRequest),
+            ($psrRequest->getQueryParams()['response_type'] ?? null) === 'token',
+        );
+
+        // A validated authorization supersedes the single pending consent in Passport.
+        $request->session()->forget(['authToken', 'authRequest', 'identity.oidc_auth']);
+
         $user = $this->guard->user();
 
         if ($user instanceof OAuthenticatable) {
